@@ -82,6 +82,15 @@ def test_init_project_creates_source_files(tmp_path: Path) -> None:
     assert (project_path / "tests" / "test_cli.py").exists()
 
 
+def test_init_project_git_identity(tmp_path: Path) -> None:
+    """应在本地 Git 配置中设置 user.name 和 user.email。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    git_config = (project_path / ".git" / "config").read_text(encoding="utf-8")
+    assert "harness-init@localhost" in git_config
+    assert "harness-init" in git_config
+
+
 def test_init_project_initializes_git(tmp_path: Path) -> None:
     """应初始化 Git 仓库并创建初始提交。"""
     project_path = tmp_path / "test-project"

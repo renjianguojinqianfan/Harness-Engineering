@@ -118,26 +118,18 @@ def _create_source_files(project_path: Path, project_name: str) -> None:
     test_file.write_text(test_content, encoding="utf-8")
 
 
+def _git(project_path: Path, *args: str) -> None:
+    """运行 Git 命令。"""
+    subprocess.run(["git", *args], cwd=project_path, check=True, capture_output=True)
+
+
 def _init_git(project_path: Path) -> None:
     """初始化 Git 仓库并创建初始提交。"""
-    subprocess.run(
-        ["git", "init"],
-        cwd=project_path,
-        check=True,
-        capture_output=True,
-    )
-    subprocess.run(
-        ["git", "add", "."],
-        cwd=project_path,
-        check=True,
-        capture_output=True,
-    )
-    subprocess.run(
-        ["git", "commit", "-m", "Initial commit"],
-        cwd=project_path,
-        check=True,
-        capture_output=True,
-    )
+    _git(project_path, "init")
+    _git(project_path, "config", "user.email", "harness-init@localhost")
+    _git(project_path, "config", "user.name", "harness-init")
+    _git(project_path, "add", ".")
+    _git(project_path, "commit", "-m", "Initial commit")
 
 
 def init_project(project_path: str) -> None:
