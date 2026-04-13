@@ -1,0 +1,3 @@
+version: "1.0"
+model:
+  primary: "kimi-for-coding/k2p5"
