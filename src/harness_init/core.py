@@ -128,9 +128,13 @@ def _gen_test_cli_py(project_name: str, package_name: str) -> str:
 
         def test_cli_main_block() -> None:
             """覆盖 if __name__ == '__main__' 分支。"""
+            import warnings
+
             with patch.object(sys, "argv", ["{project_name}"]):
                 try:
-                    runpy.run_module("{package_name}.cli", run_name="__main__")
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", RuntimeWarning)
+                        runpy.run_module("{package_name}.cli", run_name="__main__")
                 except SystemExit as exc:
                     assert exc.code == 0
         '''
