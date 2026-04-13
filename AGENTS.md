@@ -38,9 +38,12 @@ tests/              # 单元测试，与 src 结构对应
 - 每完成一个子任务，必须运行 `make verify` 验证
 - 测试覆盖率不达标时禁止提交
 
-## 已知问题与环境提示
-- 当前根目录的 Makefile 文件名为 `Makeflie`（拼写错误），执行 make 命令前需修正为 `Makefile`。
-- Windows 环境下可能未安装 `make`，可直接运行等价命令：
-  - `ruff check src/`（lint）
-  - `pytest tests/ -v --cov=src --cov-fail-under=85`（test）
-- 首次开发前请确保已安装依赖：`pip install -e .`（或通过 `make install`）
+## 环境要求
+- 首次开发前必须执行：`pip install -e .`（或 `make install`）
+- 系统中必须安装 `git`，`core.py` 会调用 `git init` 和 `git commit`
+- `make` 在 Windows 上非默认自带，若不可用可运行等价命令：
+  - `ruff check src/`
+  - `pytest tests/ -v --cov=src --cov-fail-under=85`
+
+## 远程仓库
+- GitHub: https://github.com/renjianguojinqianfan/Harness-Engineering
