@@ -7,8 +7,7 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
-eggs/
+*.egg-info/
 .eggs/
 lib/
 lib64/
@@ -16,27 +15,26 @@ parts/
 sdist/
 var/
 wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
 # Virtual environments
 venv/
 ENV/
 env/
 
-# IDE
+# IDE / OS
 .idea/
 .vscode/
 *.swp
-*.swo
-*~
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Coverage
+# Testing / Coverage
+.pytest_cache/
 htmlcov/
 .coverage
 .coverage.*
+
+# Harness Engineering
+.harness/state/
+.harness/logs/
+*.backup.json
+.agent/

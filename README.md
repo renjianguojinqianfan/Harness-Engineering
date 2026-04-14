@@ -1,6 +1,6 @@
 # harness-init
 
-快速初始化符合 Harness Engineering 规范的 Python CLI 项目。
+快速初始化符合 Harness Engineering 规范的**完整 Harness Engineering 项目**。
 
 ## 安装
 
@@ -18,8 +18,12 @@ harness-init my-project
 
 执行后会在当前目录创建 `my-project/`，包含：
 - 完整的 Python 包结构（`src/my_project/`）
-- 初始 CLI 代码和单元测试（`pytest` + `typer`）
-- `pyproject.toml`、`Makefile`、`.gitignore`、`AGENTS.md`
+- Harness 核心引擎（`src/my_project/harness/runner.py`、`evaluator.py`、`state.py`、`workflow.py`）
+- 智能体 stubs（`src/my_project/agents/planner.py`、`generator.py`、`evaluator.py`）
+- 运行时目录（`.harness/plans/`、`.harness/eval_feedback/`、`.harness/state/`、`.harness/logs/`）
+- 多命令 CLI（`run`、`evaluate`、`status`）
+- `configs/`（dev/test/prod）、`docs/context.md`、`AGENTS.md`
+- `pyproject.toml`、`Makefile`、`.gitignore`、`opencode.yaml`
 - 自动初始化的 Git 仓库和初始提交
 
 进入生成的项目即可运行验证：

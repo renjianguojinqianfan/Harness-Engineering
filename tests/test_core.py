@@ -16,10 +16,18 @@ def test_init_project_creates_subdirectories(tmp_path: Path) -> None:
     """应创建标准子目录结构。"""
     project_path = tmp_path / "test-project"
     init_project(str(project_path))
-    assert (project_path / ".agent").is_dir()
-    assert (project_path / ".agent" / "plans").is_dir()
-    assert (project_path / "specs").is_dir()
+    assert (project_path / ".harness" / "plans").is_dir()
+    assert (project_path / ".harness" / "eval_feedback").is_dir()
+    assert (project_path / ".harness" / "state").is_dir()
+    assert (project_path / ".harness" / "templates").is_dir()
+    assert (project_path / ".harness" / "logs").is_dir()
+    assert (project_path / "configs").is_dir()
+    assert (project_path / "docs").is_dir()
     assert (project_path / "src" / "test_project").is_dir()
+    assert (project_path / "src" / "test_project" / "harness").is_dir()
+    assert (project_path / "src" / "test_project" / "agents").is_dir()
+    assert (project_path / "src" / "test_project" / "tools").is_dir()
+    assert (project_path / "src" / "test_project" / "utils").is_dir()
     assert (project_path / "tests").is_dir()
 
 
@@ -78,27 +86,45 @@ def test_init_project_creates_source_files(tmp_path: Path) -> None:
     init_project(str(project_path))
     assert (project_path / "src" / "test_project" / "__init__.py").exists()
     assert (project_path / "src" / "test_project" / "cli.py").exists()
+    assert (project_path / "src" / "test_project" / "harness" / "__init__.py").exists()
+    assert (project_path / "src" / "test_project" / "agents" / "__init__.py").exists()
+    assert (project_path / "src" / "test_project" / "tools" / "__init__.py").exists()
+    assert (project_path / "src" / "test_project" / "utils" / "__init__.py").exists()
     assert (project_path / "tests" / "__init__.py").exists()
     assert (project_path / "tests" / "test_cli.py").exists()
+    assert (project_path / "tests" / "test_harness.py").exists()
 
 
-def test_init_project_generated_cli_uses_typer_run(tmp_path: Path) -> None:
-    """生成的 cli.py 应使用 typer.run 模式。"""
+def test_init_project_generated_cli_uses_typer_typer(tmp_path: Path) -> None:
+    """生成的 cli.py 应使用 typer.Typer() 模式。"""
     project_path = tmp_path / "test-project"
     init_project(str(project_path))
     content = (project_path / "src" / "test_project" / "cli.py").read_text(encoding="utf-8")
-    assert "typer.run(hello)" in content
-    assert "app = typer.Typer()" not in content
+    assert "app = typer.Typer()" in content
+    assert "typer.run(hello)" not in content
 
 
-def test_init_project_generated_test_cli_matches(tmp_path: Path) -> None:
-    """生成的 test_cli.py 应与 typer.run 模式匹配。"""
+def test_init_project_creates_harness_runner(tmp_path: Path) -> None:
+    """应生成 harness/runner.py。"""
     project_path = tmp_path / "test-project"
     init_project(str(project_path))
-    content = (project_path / "tests" / "test_cli.py").read_text(encoding="utf-8")
-    assert "from test_project.cli import cli, hello" in content
-    assert "capsys" in content
-    assert "runner.invoke(app)" not in content
+    assert (project_path / "src" / "test_project" / "harness" / "runner.py").exists()
+
+
+def test_init_project_creates_docs_context(tmp_path: Path) -> None:
+    """应生成 docs/context.md。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "docs" / "context.md").exists()
+
+
+def test_init_project_creates_configs(tmp_path: Path) -> None:
+    """应生成 configs/ 下的配置文件。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "configs" / "dev.yaml").exists()
+    assert (project_path / "configs" / "test.yaml").exists()
+    assert (project_path / "configs" / "prod.yaml").exists()
 
 
 def test_init_project_git_identity(tmp_path: Path) -> None:

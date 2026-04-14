@@ -7,11 +7,14 @@ from harness_init.cli import cli, main
 
 
 def test_main_creates_project(tmp_path: Path) -> None:
-    """应能根据项目名创建项目。"""
+    """应能根据项目名创建完整的 Harness v2 项目。"""
     project_path = tmp_path / "my-project"
     main(str(project_path))
     assert project_path.is_dir()
     assert (project_path / ".git").is_dir()
+    assert (project_path / ".harness" / "plans").is_dir()
+    assert (project_path / "src" / "my_project" / "harness" / "runner.py").exists()
+    assert (project_path / "docs" / "context.md").exists()
 
 
 def test_cli_without_args_exits(tmp_path: Path) -> None:

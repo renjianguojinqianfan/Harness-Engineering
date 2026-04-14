@@ -1,7 +1,7 @@
 # AGENTS.md - harness-init
 
 ## 项目目标
-构建 `harness-init` CLI 工具，用于快速初始化符合 Harness Engineering 规范的**完整可运行 Python CLI 项目**（非空壳，生成后即可 `make verify` 通过）。
+构建 `harness-init` CLI 工具，用于快速初始化符合 Harness Engineering 规范的**完整 Harness Engineering 项目**（非空壳，生成后即可 `make verify` 通过）。
 
 ## 技术栈
 - Python 3.11+
@@ -21,17 +21,26 @@
 ```
 src/harness_init/
 ├── cli.py          # CLI 入口
-├── core.py         # 核心逻辑
-└── templates/      # 项目模板资源（生成目标项目的文件模板）
+├── core.py         # 核心逻辑（生成目录、复制模板、初始化 Git）
+└── templates/      # 项目模板资源（harness 核心、agents stubs、configs、docs）
 tests/              # 单元测试，与 src 结构对应
 ```
 
 ## 架构铁律
 1. `cli.py` 只负责参数解析和调用 `core.py`
 2. `core.py` 处理所有文件生成和 Git 初始化逻辑
-3. `templates/` 存放目标项目的模板文件（AGENTS.md、Makefile、.gitignore 等）
+3. `templates/` 存放目标项目的模板文件（AGENTS.md、Makefile、.gitignore、runner.py、evaluator.py 等）
 4. 所有核心逻辑必须有单元测试
 5. 每个函数 ≤ 30 行，每个文件 ≤ 200 行
+
+## v2 生成项目结构
+生成的项目具备：
+- `.harness/` 运行时目录（plans、eval_feedback、state、templates、logs）
+- `src/{package_name}/harness/` 核心引擎（runner、evaluator、state、workflow）
+- `src/{package_name}/agents/` 智能体 stubs（planner、generator、evaluator）
+- `configs/`（dev.yaml、test.yaml、prod.yaml）
+- `docs/context.md` 深层上下文文档（与 AGENTS.md 分离）
+- 多命令 CLI：`run [plan]`、`evaluate [result_path]`、`status`
 
 ## 开发流程
 - 使用 **Sisyphus** 主编排任务
@@ -39,8 +48,8 @@ tests/              # 单元测试，与 src 结构对应
 - 测试覆盖率不达标时禁止提交
 
 ## 关键实现细节
-- 生成的项目 CLI 使用 `typer.run(hello)` 单命令模式，避免 `typer.Typer()` 在单命令时被压平的问题
-- `core.py` 使用 `textwrap.dedent` 管理多行模板字符串，避免 E501 超长行
+- 生成的项目 CLI 使用 `typer.Typer()` 多命令模式（run / evaluate / status）
+- 所有长模板优先作为独立文件存放在 `templates/` 下，避免 `core.py` 超过 200 行
 - `_init_git()` 会自动配置本地 `user.name` 和 `user.email`，不依赖全局 Git 配置
 - 模板目录 `src/harness_init/templates/` 已被根 `pyproject.toml` 的 ruff 配置排除
 

@@ -3,7 +3,6 @@
 import re
 import subprocess
 from pathlib import Path
-from textwrap import dedent
 
 
 def _get_templates_dir() -> Path:
@@ -45,9 +44,18 @@ def _create_directories(project_path: Path, project_name: str) -> None:
     """创建项目标准目录结构。"""
     package_name = _to_package_name(project_name)
     dirs = [
-        ".agent/plans",
-        "specs",
+        ".harness/plans",
+        ".harness/eval_feedback",
+        ".harness/state",
+        ".harness/templates",
+        ".harness/logs",
+        "configs",
+        "docs",
         f"src/{package_name}",
+        f"src/{package_name}/harness",
+        f"src/{package_name}/agents",
+        f"src/{package_name}/tools",
+        f"src/{package_name}/utils",
         "tests",
     ]
     for d in dirs:
@@ -55,108 +63,30 @@ def _create_directories(project_path: Path, project_name: str) -> None:
 
 
 def _copy_templates(project_path: Path, project_name: str) -> None:
-    """复制模板文件到项目目录。"""
+    """复制模板文件到项目目录（递归）。"""
     templates_dir = _get_templates_dir()
-    files = {
-        "AGENTS.md": "AGENTS.md",
-        "Makefile": "Makefile",
-        ".gitignore": ".gitignore",
-        "opencode.yaml": "opencode.yaml",
-        "pyproject.toml": "pyproject.toml",
-        "README.md": "README.md",
-    }
-    for src_name, dst_name in files.items():
-        src = templates_dir / src_name
-        dst = project_path / dst_name
-        if src.exists():
-            _render_template(src, dst, project_name)
-
-
-def _gen_cli_py(project_name: str, package_name: str) -> str:
-    """生成 cli.py 内容。"""
-    return dedent(
-        f'''\
-        """CLI entry for {package_name}."""
-
-        import typer
-
-
-        def hello() -> None:
-            """Say hello."""
-            typer.echo("Hello from {project_name}!")
-
-
-        def cli() -> None:
-            """CLI entry point."""
-            typer.run(hello)
-
-
-        if __name__ == "__main__":
-            cli()
-        '''
-    )
-
-
-def _gen_test_cli_py(project_name: str, package_name: str) -> str:
-    """生成 test_cli.py 内容。"""
-    return dedent(
-        f'''\
-        """Tests for cli.py."""
-
-        import runpy
-        import sys
-        from unittest.mock import patch
-
-        from {package_name}.cli import cli, hello
-
-
-        def test_hello(capsys) -> None:
-            """hello 应输出问候语。"""
-            hello()
-            captured = capsys.readouterr()
-            assert "Hello from {project_name}!" in captured.out
-
-
-        def test_cli_without_args() -> None:
-            """cli 不带参数时应正常执行并退出。"""
-            with patch.object(sys, "argv", [sys.executable]):
-                try:
-                    cli()
-                except SystemExit as exc:
-                    assert exc.code == 0
-
-
-        def test_cli_main_block() -> None:
-            """覆盖 if __name__ == '__main__' 分支。"""
-            import warnings
-
-            with patch.object(sys, "argv", ["{project_name}"]):
-                try:
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore", RuntimeWarning)
-                        runpy.run_module("{package_name}.cli", run_name="__main__")
-                except SystemExit as exc:
-                    assert exc.code == 0
-        '''
-    )
+    package_name = _to_package_name(project_name)
+    for src in templates_dir.rglob("*"):
+        if not src.is_file() or ".ruff_cache" in src.parts:
+            continue
+        rel = src.relative_to(templates_dir)
+        rel_str = str(rel).replace("{package_name}", package_name)
+        dst = project_path / rel_str
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        _render_template(src, dst, project_name)
 
 
 def _create_source_files(project_path: Path, project_name: str) -> None:
     """创建初始 Python 源码和测试文件。"""
     package_name = _to_package_name(project_name)
-    src_dir = project_path / "src" / package_name
-
-    init_file = src_dir / "__init__.py"
-    init_file.write_text(
+    pkg_dir = project_path / "src" / package_name
+    for sub in ["harness", "agents", "tools", "utils"]:
+        (pkg_dir / sub / "__init__.py").write_text("", encoding="utf-8")
+    (project_path / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (pkg_dir / "__init__.py").write_text(
         f'"""{package_name} package."""\n\n__version__ = "0.1.0"\n',
         encoding="utf-8",
     )
-
-    (src_dir / "cli.py").write_text(_gen_cli_py(project_name, package_name), encoding="utf-8")
-
-    tests_dir = project_path / "tests"
-    (tests_dir / "__init__.py").write_text("", encoding="utf-8")
-    (tests_dir / "test_cli.py").write_text(_gen_test_cli_py(project_name, package_name), encoding="utf-8")
 
 
 def _git(project_path: Path, *args: str) -> None:
