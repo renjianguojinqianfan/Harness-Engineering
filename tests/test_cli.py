@@ -50,3 +50,16 @@ def test_cli_no_git_flag(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert project_path.is_dir()
     assert not (project_path / ".git").exists()
+
+
+def test_cli_force_flag(tmp_path: Path) -> None:
+    """--force 应覆盖已存在目录。"""
+    app = typer.Typer()
+    app.command()(main)
+    project_path = tmp_path / "force-cli"
+    project_path.mkdir()
+    (project_path / "old.txt").write_text("old")
+    result = runner.invoke(app, [str(project_path), "--force"])
+    assert result.exit_code == 0
+    assert not (project_path / "old.txt").exists()
+    assert (project_path / "pyproject.toml").exists()

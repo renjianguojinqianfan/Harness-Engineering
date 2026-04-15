@@ -204,3 +204,16 @@ def test_init_project_skips_cache_files(tmp_path: Path) -> None:
     init_project(str(project_path))
     for bad in [".DS_Store", "__pycache__", "foo.pyc"]:
         assert not any(f.name == bad for f in project_path.rglob("*"))
+
+
+def test_init_project_creates_all_harness_and_agent_files(tmp_path: Path) -> None:
+    """应生成所有 harness 和 agents 文件。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    pkg = project_path / "src" / "test_project"
+    assert (pkg / "harness" / "evaluator.py").exists()
+    assert (pkg / "harness" / "state.py").exists()
+    assert (pkg / "harness" / "workflow.py").exists()
+    assert (pkg / "agents" / "planner.py").exists()
+    assert (pkg / "agents" / "generator.py").exists()
+    assert (pkg / "agents" / "evaluator.py").exists()
