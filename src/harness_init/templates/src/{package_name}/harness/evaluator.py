@@ -1,4 +1,5 @@
 """Harness evaluator - minimal runnable version."""
+
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,9 +21,7 @@ class HarnessEvaluator:
         self.feedback_dir = Path(feedback_dir)
         self.feedback_dir.mkdir(parents=True, exist_ok=True)
 
-    def evaluate(
-        self, result: dict[str, Any], criteria: dict[str, Any]
-    ) -> EvaluationResult:
+    def evaluate(self, result: dict[str, Any], criteria: dict[str, Any]) -> EvaluationResult:
         """Evaluate execution result."""
         checks = []
 
@@ -65,7 +64,7 @@ class HarnessEvaluator:
             "feedback": result.feedback,
         }
 
-        with open(feedback_path, "w") as f:
+        with open(feedback_path, "w", encoding="utf-8") as f:
             json.dump(feedback_data, f, indent=2)
 
         return feedback_path

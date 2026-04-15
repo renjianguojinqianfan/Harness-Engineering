@@ -1,6 +1,9 @@
 """Harness runner - minimal runnable version."""
+
 import asyncio
 import json
+import os
+import shlex
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -33,7 +36,7 @@ class HarnessRunner:
 
     async def run_plan(self, plan_path: str) -> dict[str, Any]:
         """Execute a plan."""
-        with open(plan_path) as f:
+        with open(plan_path, encoding="utf-8") as f:
             plan = json.load(f)
 
         results: list[dict[str, Any]] = []
@@ -51,9 +54,7 @@ class HarnessRunner:
 
         return {
             "plan_id": plan["id"],
-            "status": "success"
-            if all(r["status"] == "success" for r in results)
-            else "failed",
+            "status": "success" if all(r["status"] == "success" for r in results) else "failed",
             "tasks": results,
         }
 
@@ -62,9 +63,11 @@ class HarnessRunner:
         task.status = TaskStatus.RUNNING
 
         try:
-            await asyncio.sleep(0.1)
-            task.status = TaskStatus.SUCCESS
-            task.output = f"Task {task.name} completed"
+            proc = await self._spawn_subprocess(task.command)
+            stdout, stderr = await proc.communicate()
+            task.output = stdout.decode("utf-8", errors="replace").strip()
+            task.error = stderr.decode("utf-8", errors="replace").strip()
+            task.status = TaskStatus.SUCCESS if proc.returncode == 0 else TaskStatus.FAILED
         except Exception as e:
             task.status = TaskStatus.FAILED
             task.error = str(e)
@@ -76,6 +79,28 @@ class HarnessRunner:
             "output": task.output,
             "error": task.error,
         }
+
+    async def _spawn_subprocess(self, command: str) -> asyncio.subprocess.Process:
+        """优先尝试无 shell 执行，失败时回退到 shell。"""
+        try:
+            cmd_parts = shlex.split(command, posix=os.name != "nt")
+        except ValueError:
+            cmd_parts = []
+        if cmd_parts:
+            try:
+                return await asyncio.create_subprocess_exec(
+                    cmd_parts[0],
+                    *cmd_parts[1:],
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+            except (FileNotFoundError, OSError):
+                pass
+        return await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
 
 
 if __name__ == "__main__":
@@ -91,7 +116,7 @@ if __name__ == "__main__":
     }
 
     plan_path = ".harness/plans/plan_001.json"
-    with open(plan_path, "w") as f:
+    with open(plan_path, "w", encoding="utf-8") as f:
         json.dump(sample_plan, f, indent=2)
 
     result = asyncio.run(runner.run_plan(plan_path))

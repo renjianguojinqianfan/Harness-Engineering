@@ -1,25 +1,16 @@
 """CLI entry point for the generated project."""
 
 import asyncio
-import importlib
 import json
 from pathlib import Path
 
 import typer
 from rich import print as rprint
 
-runner_mod = importlib.import_module("{package_name}.harness.runner")
-HarnessRunner = runner_mod.HarnessRunner
-
-eval_mod = importlib.import_module("{package_name}.harness.evaluator")
-HarnessEvaluator = eval_mod.HarnessEvaluator
-
-state_mod = importlib.import_module("{package_name}.harness.state")
-StateManager = state_mod.StateManager
-
-workflow_mod = importlib.import_module("{package_name}.harness.workflow")
-Stage = workflow_mod.Stage
-get_next_stage = workflow_mod.get_next_stage
+from {package_name}.harness.evaluator import HarnessEvaluator
+from {package_name}.harness.runner import HarnessRunner
+from {package_name}.harness.state import StateManager
+from {package_name}.harness.workflow import Stage, get_next_stage
 
 app = typer.Typer()
 
@@ -36,7 +27,7 @@ def run(plan: str) -> None:
 
     result_path = Path(".harness/state/last_result.json")
     result_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(result_path, "w") as f:
+    with open(result_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
 
     state.set("stage", get_next_stage(Stage.EXECUTE).value)
@@ -51,7 +42,7 @@ def evaluate(
     result_path: str = typer.Argument(".harness/state/last_result.json"),
 ) -> None:
     """Evaluate a result and save feedback."""
-    with open(result_path) as f:
+    with open(result_path, encoding="utf-8") as f:
         result = json.load(f)
 
     evaluator = HarnessEvaluator()
@@ -81,5 +72,10 @@ def status() -> None:
         rprint("[yellow]No active plan.[/yellow]")
 
 
-if __name__ == "__main__":
+def cli() -> None:
+    """Entry point for setuptools console script."""
     app()
+
+
+if __name__ == "__main__":
+    cli()

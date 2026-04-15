@@ -25,6 +25,9 @@ harness-init = "harness_init.cli:cli"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+harness_init = ["templates/**/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
