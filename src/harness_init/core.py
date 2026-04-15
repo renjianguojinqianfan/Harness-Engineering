@@ -10,6 +10,14 @@ def _get_templates_dir() -> Path:
     return Path(__file__).parent / "templates"
 
 
+def _validate_project_name(project_name: str) -> None:
+    """验证项目名非空且不包含非法路径字符。"""
+    if not project_name or not project_name.strip():
+        raise ValueError("Project name cannot be empty.")
+    if any(c in project_name for c in ("/", "\\", "..")):
+        raise ValueError("Project name cannot contain path separators or '..'.")
+
+
 def _to_package_name(project_name: str) -> str:
     """将项目名转换为合法的 Python 包名。"""
     return project_name.replace("-", "_").lower()
@@ -103,15 +111,33 @@ def _init_git(project_path: Path) -> None:
     _git(project_path, "commit", "-m", "Initial commit")
 
 
-def init_project(project_path: str) -> None:
+def init_project(project_path: str, *, force: bool = False, no_git: bool = False) -> None:
     """初始化新项目。
 
     Args:
         project_path: 项目目标路径。
+        force: 是否强制覆盖已存在目录。
+        no_git: 是否跳过 Git 初始化。
     """
     path = Path(project_path)
     project_name = path.name
+    _validate_project_name(project_name)
+    if ".." in path.parts:
+        raise ValueError("Project path cannot contain '..'.")
+    if path.exists() and any(path.iterdir()) and not force:
+        raise FileExistsError(f"Directory {path} already exists and is not empty. Use --force to overwrite.")
+    if force and path.exists():
+        import shutil
+
+        shutil.rmtree(path)
     _create_directories(path, project_name)
     _copy_templates(path, project_name)
     _create_source_files(path, project_name)
-    _init_git(path)
+    if not no_git:
+        try:
+            _init_git(path)
+        except Exception as exc:
+            import shutil
+
+            shutil.rmtree(path)
+            raise RuntimeError(f"Git initialization failed: {exc}") from exc

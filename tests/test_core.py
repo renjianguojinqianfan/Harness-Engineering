@@ -1,6 +1,9 @@
 """Tests for core.py."""
 
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 
 from harness_init.core import init_project
 
@@ -142,3 +145,54 @@ def test_init_project_initializes_git(tmp_path: Path) -> None:
     init_project(str(project_path))
     git_dir = project_path / ".git"
     assert git_dir.is_dir()
+
+
+def test_init_project_rejects_empty_name(tmp_path: Path) -> None:
+    """应拒绝空字符串项目名。"""
+    with pytest.raises(ValueError, match="cannot be empty"):
+        init_project("")
+
+
+def test_init_project_rejects_path_traversal(tmp_path: Path) -> None:
+    """应拒绝包含路径分隔符的项目名。"""
+    with pytest.raises(ValueError, match="cannot contain"):
+        init_project("foo/../bar")
+
+
+def test_init_project_fails_on_existing_non_empty_dir(tmp_path: Path) -> None:
+    """非空目录已存在且未指定 force 时应报错。"""
+    project_path = tmp_path / "existing"
+    project_path.mkdir()
+    (project_path / "file.txt").write_text("hello")
+    with pytest.raises(FileExistsError):
+        init_project(str(project_path))
+
+
+def test_init_project_force_overwrites_existing_dir(tmp_path: Path) -> None:
+    """指定 force 时应覆盖已存在目录。"""
+    project_path = tmp_path / "existing"
+    project_path.mkdir()
+    (project_path / "old.txt").write_text("old")
+    init_project(str(project_path), force=True)
+    assert not (project_path / "old.txt").exists()
+    assert (project_path / "pyproject.toml").exists()
+
+
+def test_init_project_no_git_skips_git(tmp_path: Path) -> None:
+    """指定 no_git=True 时不应创建 .git 目录。"""
+    project_path = tmp_path / "no-git-project"
+    init_project(str(project_path), no_git=True)
+    assert project_path.is_dir()
+    assert not (project_path / ".git").exists()
+
+
+def test_init_project_git_failure_rolls_back(tmp_path: Path) -> None:
+    """Git 初始化失败时应清理已创建目录。"""
+    project_path = tmp_path / "rollback-project"
+    with patch(
+        "harness_init.core.subprocess.run",
+        side_effect=FileNotFoundError("git not found"),
+    ):
+        with pytest.raises(RuntimeError, match="Git initialization failed"):
+            init_project(str(project_path))
+    assert not project_path.exists()
