@@ -1,4 +1,6 @@
 """Planner agent stub."""
+
+import shlex
 from typing import Any
 
 
@@ -19,7 +21,7 @@ class PlannerAgent:
                 {
                     "id": "task_2",
                     "name": "Execute goal",
-                    "command": f"echo '{goal}'",
+                    "command": f"echo {shlex.quote(goal)}",
                 },
             ],
         }
