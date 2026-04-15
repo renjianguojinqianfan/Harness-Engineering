@@ -1,5 +1,6 @@
 """Simple JSON state manager."""
 
+import contextlib
 import json
 import os
 import tempfile
@@ -17,10 +18,12 @@ class StateManager:
         self.load()
 
     def load(self) -> dict[str, Any]:
-        """Load state from disk."""
         if self.state_path.exists():
-            with open(self.state_path, encoding="utf-8") as f:
-                self._data = json.load(f)
+            try:
+                with open(self.state_path, encoding="utf-8") as f:
+                    self._data = json.load(f)
+            except json.JSONDecodeError:
+                self._data = {}
         else:
             self._data = {}
         return self._data
@@ -34,10 +37,8 @@ class StateManager:
                 json.dump(self._data, f, indent=2)
             os.replace(tmp_path_str, self.state_path)
         except Exception:
-            try:
+            with contextlib.suppress(OSError):
                 os.unlink(tmp_path_str)
-            except OSError:
-                pass
             raise
 
     def get(self, key: str, default: Any | None = None) -> Any:

@@ -43,6 +43,7 @@ make verify
 harness-init --version
 
 # 强制覆盖已存在目录（旧目录会被备份为 my-project.bak-YYYYMMDDhhmmss）
+# ⚠️ 警告：--force 会移动整个已存在目录并用模板覆盖，不适合已有代码仓库的增量迁移
 harness-init my-project --force
 
 # 跳过 Git 初始化

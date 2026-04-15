@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import shlex
 from dataclasses import dataclass
 from enum import Enum
@@ -82,7 +83,7 @@ class HarnessRunner:
     async def _spawn_subprocess(self, command: str) -> asyncio.subprocess.Process:
         """优先尝试无 shell 执行，失败时回退到 shell。"""
         try:
-            cmd_parts = shlex.split(command)
+            cmd_parts = shlex.split(command, posix=os.name != "nt")
         except ValueError:
             cmd_parts = []
         if cmd_parts:

@@ -143,8 +143,10 @@ def _create_source_files(project_path: Path, project_name: str) -> None:
 
 
 def _git(project_path: Path, *args: str) -> None:
-    """运行 Git 命令。"""
-    subprocess.run(["git", *args], cwd=project_path, check=True, capture_output=True)
+    """运行 Git 命令，失败时抛出包含 stderr 的异常。"""
+    result = subprocess.run(["git", *args], cwd=project_path, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
 
 
 def _init_git(project_path: Path) -> None:
@@ -178,12 +180,12 @@ def init_project(project_path: str, *, force: bool = False, no_git: bool = False
     _validate_project_name(project_name)
     if ".." in path.parts:
         raise ValueError("Project path cannot contain '..'.")
-    if path.exists() and any(path.iterdir()) and not force:
+    if path.exists() and not force and (path.is_file() or any(path.iterdir())):
         raise FileExistsError(f"Directory {path} already exists and is not empty. Use --force to overwrite.")
     if force and path.exists():
         import shutil
 
-        suffix = datetime.now(UTC).strftime(".bak-%Y%m%d%H%M%S")
+        suffix = datetime.now(UTC).strftime(".bak-%Y%m%d%H%M%S%f")
         backup_path = path.with_name(path.name + suffix)
         shutil.move(str(path), str(backup_path))
     _create_directories(path, project_name)
@@ -195,5 +197,7 @@ def init_project(project_path: str, *, force: bool = False, no_git: bool = False
         except Exception as exc:
             import shutil
 
-            shutil.rmtree(path, onexc=_on_remove_error)
+            git_dir = path / ".git"
+            if git_dir.exists():
+                shutil.rmtree(str(git_dir), onerror=_on_remove_error)
             raise RuntimeError(f"Git initialization failed: {exc}") from exc

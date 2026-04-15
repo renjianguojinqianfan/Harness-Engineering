@@ -7,8 +7,8 @@ from pathlib import Path
 import typer
 from rich import print as rprint
 
-from {package_name}.harness.runner import HarnessRunner
 from {package_name}.harness.evaluator import HarnessEvaluator
+from {package_name}.harness.runner import HarnessRunner
 from {package_name}.harness.state import StateManager
 from {package_name}.harness.workflow import Stage, get_next_stage
 
@@ -72,5 +72,10 @@ def status() -> None:
         rprint("[yellow]No active plan.[/yellow]")
 
 
-if __name__ == "__main__":
+def cli() -> None:
+    """Entry point for setuptools console script."""
     app()
+
+
+if __name__ == "__main__":
+    cli()

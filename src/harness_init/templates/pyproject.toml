@@ -30,6 +30,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 addopts = "-v --cov=src --cov-fail-under=85"
 
 [tool.ruff]

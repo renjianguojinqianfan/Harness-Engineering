@@ -202,7 +202,7 @@ def test_init_project_no_git_skips_git(tmp_path: Path) -> None:
 
 
 def test_init_project_git_failure_rolls_back(tmp_path: Path) -> None:
-    """Git 初始化失败时应清理已创建目录。"""
+    """Git 初始化失败时应仅移除 .git 目录，保留项目文件。"""
     project_path = tmp_path / "rollback-project"
     with patch(
         "harness_init.core.subprocess.run",
@@ -210,7 +210,39 @@ def test_init_project_git_failure_rolls_back(tmp_path: Path) -> None:
     ):
         with pytest.raises(RuntimeError, match="Git initialization failed"):
             init_project(str(project_path))
-    assert not project_path.exists()
+    assert project_path.is_dir()
+    assert not (project_path / ".git").exists()
+    assert (project_path / "src" / "rollback_project" / "cli.py").exists()
+
+
+def test_init_project_git_failure_surfaces_stderr(tmp_path: Path) -> None:
+    """Git 失败时应将 stderr 包含在异常信息中。"""
+    import subprocess as sp
+
+    project_path = tmp_path / "git-stderr-project"
+    with patch(
+        "harness_init.core.subprocess.run",
+        return_value=sp.CompletedProcess(
+            args=["git", "commit", "-m", "x"],
+            returncode=1,
+            stdout="",
+            stderr="author identity unknown",
+        ),
+    ):
+        with pytest.raises(RuntimeError, match="author identity unknown"):
+            init_project(str(project_path))
+
+
+def test_init_project_force_uses_microsecond_backup_suffix(tmp_path: Path) -> None:
+    """force 模式备份后缀应包含微秒以避免冲突。"""
+    project_path = tmp_path / "backup-project"
+    project_path.mkdir()
+    (project_path / "file.txt").write_text("data")
+    init_project(str(project_path), force=True)
+    backups = [p for p in tmp_path.iterdir() if p.name.startswith("backup-project.bak-")]
+    assert len(backups) == 1
+    assert len(backups[0].name.split(".bak-")[-1]) == 20  # YYYYMMDDhhmmssffffff
+    assert (backups[0] / "file.txt").exists()
 
 
 def test_init_project_skips_cache_files(tmp_path: Path) -> None:
@@ -232,3 +264,64 @@ def test_init_project_creates_all_harness_and_agent_files(tmp_path: Path) -> Non
     assert (pkg / "agents" / "planner.py").exists()
     assert (pkg / "agents" / "generator.py").exists()
     assert (pkg / "agents" / "evaluator.py").exists()
+
+
+def test_init_project_entry_point_importable(tmp_path: Path) -> None:
+    """生成的 cli.py 必须能导入 cli 入口函数。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    cli_path = project_path / "src" / "test_project" / "cli.py"
+    content = cli_path.read_text(encoding="utf-8")
+    assert "def cli() -> None:" in content
+
+
+def test_init_project_pyproject_has_pythonpath(tmp_path: Path) -> None:
+    """生成的 pyproject.toml 应包含 pythonpath 配置。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    pyproject = project_path / "pyproject.toml"
+    assert 'pythonpath = ["src"]' in pyproject.read_text(encoding="utf-8")
+
+
+def test_init_project_runner_uses_posix_shlex(tmp_path: Path) -> None:
+    """生成的 runner.py 应使用 posix-aware shlex.split。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    runner_path = project_path / "src" / "test_project" / "harness" / "runner.py"
+    content = runner_path.read_text(encoding="utf-8")
+    assert 'shlex.split(command, posix=os.name != "nt")' in content
+
+
+def test_init_project_state_manager_handles_corrupt_json(tmp_path: Path) -> None:
+    """StateManager 应能处理损坏的 JSON 状态文件。"""
+    import sys
+
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    state_file = project_path / ".harness" / "state" / "state.json"
+    state_file.write_text("not json", encoding="utf-8")
+
+    pkg_src = str(project_path / "src")
+    if pkg_src not in sys.path:
+        sys.path.insert(0, pkg_src)
+    mod = __import__("test_project.harness.state", fromlist=["StateManager"])
+    sm = mod.StateManager(str(state_file))
+    assert sm._data == {}
+
+
+def test_init_project_gitignore_has_plans_and_eval_feedback(tmp_path: Path) -> None:
+    """.gitignore 应排除 .harness/plans/ 和 .harness/eval_feedback/。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    gitignore = project_path / ".gitignore"
+    content = gitignore.read_text(encoding="utf-8")
+    assert ".harness/plans/" in content
+    assert ".harness/eval_feedback/" in content
+
+
+def test_init_project_rejects_existing_file(tmp_path: Path) -> None:
+    """当 project_path 指向已存在的文件时应抛出 FileExistsError。"""
+    file_path = tmp_path / "existing-file"
+    file_path.write_text("hello")
+    with pytest.raises(FileExistsError):
+        init_project(str(file_path))

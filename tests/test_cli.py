@@ -65,3 +65,35 @@ def test_cli_force_flag(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert not (project_path / "old.txt").exists()
     assert (project_path / "pyproject.toml").exists()
+
+
+def test_generated_project_passes_make_verify(tmp_path: Path) -> None:
+    """生成的项目必须能通过 make verify（lint + tests）。"""
+    import subprocess
+    import sys
+
+    from harness_init.core import init_project
+
+    project_path = tmp_path / "verify-project"
+    init_project(str(project_path), no_git=True)
+
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "-e", f"{project_path}[dev]"],
+        check=True,
+        capture_output=True,
+    )
+
+    try:
+        result = subprocess.run(
+            ["make", "verify"],
+            cwd=project_path,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stdout + "\n" + result.stderr
+    finally:
+        subprocess.run(
+            [sys.executable, "-m", "pip", "uninstall", "-y", "verify_project"],
+            check=False,
+            capture_output=True,
+        )
