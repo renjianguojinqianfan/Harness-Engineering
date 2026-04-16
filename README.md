@@ -5,8 +5,8 @@
 ## 安装
 
 ```bash
-git clone https://github.com/renjianguojinqianfan/Harness-Engineering.git
-cd Harness-Engineering
+git clone https://github.com/renjianguojinqianfan/Project-Bootstrap-Harness.git
+cd Project-Bootstrap-Harness
 pip install -e ".[dev]"
 ```
 

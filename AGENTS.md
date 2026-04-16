@@ -62,4 +62,4 @@ tests/              # 单元测试，与 src 结构对应
   - `pytest tests/ -v --cov=src --cov-fail-under=85`
 
 ## 远程仓库
-- GitHub: https://github.com/renjianguojinqianfan/Harness-Engineering
+- GitHub: https://github.com/renjianguojinqianfan/Project-Bootstrap-Harness
