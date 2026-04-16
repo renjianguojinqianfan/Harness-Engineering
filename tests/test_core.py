@@ -204,12 +204,14 @@ def test_init_project_no_git_skips_git(tmp_path: Path) -> None:
 def test_init_project_git_failure_rolls_back(tmp_path: Path) -> None:
     """Git 初始化失败时应仅移除 .git 目录，保留项目文件。"""
     project_path = tmp_path / "rollback-project"
-    with patch(
-        "harness_init.core.subprocess.run",
-        side_effect=FileNotFoundError("git not found"),
+    with (
+        patch(
+            "harness_init.core.subprocess.run",
+            side_effect=FileNotFoundError("git not found"),
+        ),
+        pytest.raises(RuntimeError, match="Git initialization failed"),
     ):
-        with pytest.raises(RuntimeError, match="Git initialization failed"):
-            init_project(str(project_path))
+        init_project(str(project_path))
     assert project_path.is_dir()
     assert not (project_path / ".git").exists()
     assert (project_path / "src" / "rollback_project" / "cli.py").exists()
@@ -220,17 +222,19 @@ def test_init_project_git_failure_surfaces_stderr(tmp_path: Path) -> None:
     import subprocess as sp
 
     project_path = tmp_path / "git-stderr-project"
-    with patch(
-        "harness_init.core.subprocess.run",
-        return_value=sp.CompletedProcess(
-            args=["git", "commit", "-m", "x"],
-            returncode=1,
-            stdout="",
-            stderr="author identity unknown",
+    with (
+        patch(
+            "harness_init.core.subprocess.run",
+            return_value=sp.CompletedProcess(
+                args=["git", "commit", "-m", "x"],
+                returncode=1,
+                stdout="",
+                stderr="author identity unknown",
+            ),
         ),
+        pytest.raises(RuntimeError, match="author identity unknown"),
     ):
-        with pytest.raises(RuntimeError, match="author identity unknown"):
-            init_project(str(project_path))
+        init_project(str(project_path))
 
 
 def test_init_project_force_uses_microsecond_backup_suffix(tmp_path: Path) -> None:
