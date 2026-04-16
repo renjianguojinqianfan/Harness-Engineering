@@ -1,2 +1,4 @@
 include README.en.md
 include LICENSE
+recursive-include src/harness_init/templates *
+recursive-exclude src/harness_init/templates/.ruff_cache *
