@@ -1,5 +1,6 @@
 """Core logic for harness-init."""
 
+import json
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -93,7 +94,20 @@ def _create_source_files(project_path: Path, project_name: str) -> None:
         f'"""{package_name} package."""\n\n__version__ = "0.1.0"\n',
         encoding="utf-8",
     )
-    (project_path / ".harness" / "progress.json").write_text('{"current_plan": null, "tasks": []}', encoding="utf-8")
+
+
+def _create_progress_json(project_path: Path, project_name: str) -> None:
+    """Create initial .harness/progress.json with proper schema."""
+    progress_data = {
+        "project_name": project_name,
+        "current_stage": "init",
+        "plans": [],
+        "last_updated": datetime.now(UTC).isoformat(),
+    }
+    (project_path / ".harness" / "progress.json").write_text(
+        json.dumps(progress_data, indent=2),
+        encoding="utf-8",
+    )
 
 
 def _prepare_project_path(path: Path, force: bool) -> None:
@@ -121,6 +135,7 @@ def _setup_project(
     _create_directories(path, project_name)
     _copy_templates(path, project_name, description, author, email)
     _create_source_files(path, project_name)
+    _create_progress_json(path, path.name)
 
 
 def init_project(
