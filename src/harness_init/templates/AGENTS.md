@@ -29,6 +29,52 @@
 
 > **Karpathy Principles**: Think (state assumptions) → Simplicity (no over-engineering) → Surgical (touch only relevant code) → Goal-Driven (test first)
 
+## Mandatory Agent Workflow
+
+**Every agent session MUST follow a three-role workflow.** The agent MUST explicitly declare its current role before acting.
+
+### Phase 1: Planner
+
+**Goal**: Understand requirements and produce an executable plan.
+
+**Instructions**:
+1. Read `docs/context.md` to understand the project context and requirements.
+2. Use `.harness/templates/plan_template.md` to create a detailed plan.
+3. Wait for human approval before proceeding to implementation.
+
+### Phase 2: Generator
+
+**Goal**: Implement the approved plan with high-quality code.
+
+**Instructions**:
+1. Read the approved plan from `.harness/plans/`.
+2. Implement each step of the plan sequentially.
+3. Run `make verify` after each logical unit of work.
+4. Update `.harness/progress.json` with current status.
+
+### Phase 3: Evaluator
+
+**Goal**: Strictly review the implementation against the plan.
+
+**Instructions**:
+1. Switch perspective to code reviewer.
+2. Verify each acceptance criterion from the plan.
+3. Run `make verify` to ensure all checks pass.
+4. If issues are found, return to the corresponding phase (Planner or Generator) for correction.
+
+## Plan File Format
+
+All plans MUST follow the template at `.harness/templates/plan_template.md`. Key fields include:
+- **goal**: The overall objective of the task.
+- **steps**: Detailed, ordered list of implementation steps.
+- **affected_files**: List of files that will be created or modified.
+- **acceptance_criteria**: Specific, testable conditions that must be met for the plan to be considered complete.
+
+## Available Commands
+
+- **`make verify`**: Runs linting (`ruff`) and tests (`pytest`) with coverage ≥ 85%. This is the primary validation command and MUST pass before any commit.
+- **`make fix`**: Attempts to automatically fix linting issues. Use with caution; after running `make fix`, you MUST run `make verify` again to ensure no regressions.
+
 ## 4. Agent Rules (DO / DON'T)
 
 - **DO** read `docs/context.md` before architectural decisions (Think principle)
