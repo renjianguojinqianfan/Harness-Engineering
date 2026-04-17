@@ -94,11 +94,40 @@ def test_init_project_creates_readme_en(tmp_path: Path) -> None:
 
 def test_init_project_creates_progress_json(tmp_path: Path) -> None:
     """应生成 .harness/progress.json。"""
+    import json
+
     project_path = tmp_path / "test-project"
     init_project(str(project_path))
     progress = project_path / ".harness" / "progress.json"
     assert progress.exists()
-    assert '"current_plan": null' in progress.read_text(encoding="utf-8")
+    data = json.loads(progress.read_text(encoding="utf-8"))
+    assert data["project_name"] == "test-project"
+    assert data["current_stage"] == "init"
+    assert data["plans"] == []
+    assert "last_updated" in data
+
+
+def test_init_project_agents_md_has_workflow(tmp_path: Path) -> None:
+    """AGENTS.md 应包含三角色工作流指令。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    agents_md = project_path / "AGENTS.md"
+    content = agents_md.read_text(encoding="utf-8")
+    assert "Planner" in content
+    assert "Generator" in content
+    assert "Evaluator" in content
+
+
+def test_init_project_creates_plan_template(tmp_path: Path) -> None:
+    """应生成 .harness/templates/plan_template.md。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    plan_template = project_path / ".harness" / "templates" / "plan_template.md"
+    assert plan_template.exists()
+    content = plan_template.read_text(encoding="utf-8")
+    assert "## Goal" in content
+    assert "## Steps" in content
+    assert "## Acceptance Criteria" in content
 
 
 def test_init_project_creates_source_files(tmp_path: Path) -> None:
