@@ -57,6 +57,7 @@
 | Utils | `src/harness_init/_utils.py` | Name validation, template rendering |
 | Git helpers | `src/harness_init/_git.py` | Git init and rollback helpers |
 | Templates | `src/harness_init/templates/` | Target project templates |
+| Plan templates | `src/harness_init/templates/.harness/templates/` | Agent plan templates for generated projects |
 | Tests | `tests/` | Unit tests (mirror `src/` structure) |
 | Plans | `docs/plans/` | Design docs and task plans |
 | Entry | `README.md` / `README.en.md` | Human-facing documentation |

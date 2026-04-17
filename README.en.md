@@ -11,7 +11,7 @@ A CLI tool to scaffold complete, ready-to-run Python projects that follow **Harn
 
 - **One-command scaffolding**: Package structure, CLI, tests, harness runtime, and Git initialization, all done automatically
 - **Generate-and-verify**: Every project includes `make verify` (ruff + pytest with coverage >= 85%)
-- **Agent-friendly**: Generated projects come with `AGENTS.md`, `docs/context.md`, and `opencode.yaml`, so external agents (e.g., OpenCode) can understand the structure and workflow right away
+- **Agent-friendly**: Generated projects come with an enhanced `AGENTS.md` (with Planner / Generator / Evaluator three-role workflow), a standard plan template at `.harness/templates/plan_template.md`, state tracking via `.harness/progress.json`, plus `docs/context.md` and `opencode.yaml`, so external agents can understand the structure and workflow right away
 - **Safe and robust**: Project name validation, path traversal protection, automatic rollback on Git failure, and atomic state writes
 - **Bilingual documentation**: Generated projects include both Chinese and English README files for international collaboration
 - **Modular design**: The generated `harness` core engine includes `runner`, `evaluator`, `state`, and `workflow` components, ready to use out of the box
@@ -47,9 +47,9 @@ After execution, `my-project/` will be created with:
 - Full Python package structure (`src/my_project/`)
 - Harness core engine: `runner.py` (task execution), `evaluator.py` (result evaluation), `state.py` (state persistence), `workflow.py` (workflow definition)
 - Agent stubs: `planner.py`, `generator.py`, `evaluator.py`
-- Runtime directories: `.harness/plans/`, `.harness/eval_feedback/`, `.harness/state/`, `.harness/progress.json`
+- Runtime directories: `.harness/plans/`, `.harness/eval_feedback/`, `.harness/state/`, `.harness/templates/plan_template.md`, `.harness/progress.json`
 - Multi-command CLI: `run`, `evaluate`, `status`
-- `configs/` (dev/test/prod), `docs/context.md`, `docs/decisions/`, `AGENTS.md`, `opencode.yaml`
+- `configs/` (dev/test/prod), `docs/context.md`, `docs/decisions/`, `AGENTS.md` (with three-role workflow), `opencode.yaml`
 - `pyproject.toml`, `Makefile`, `.gitignore`, `README.md`, `README.en.md`
 - Auto-initialized Git repository with an initial commit
 
@@ -62,8 +62,9 @@ my-project/
 │   ├── eval_feedback/        # Evaluation feedback
 │   ├── state/                # State persistence
 │   ├── templates/            # Template files
+│   │   └── plan_template.md  # Standard agent plan template
 │   ├── logs/                 # Runtime logs
-│   └── progress.json         # Task progress
+│   └── progress.json         # Task progress (current_stage, plans, last_updated)
 ├── configs/                  # Multi-environment config (dev/test/prod)
 ├── docs/                     # Documentation
 │   ├── context.md            # Agent context
@@ -128,11 +129,12 @@ To produce a valid Python package, the project name must:
 
 Generated projects are designed for external agents:
 
-- **`AGENTS.md`**: Quick map so agents can understand the project role, workflow, and key constraints at a glance
+- **`AGENTS.md`**: Quick map with Planner / Generator / Evaluator three-role mandatory workflow so agents know exactly which role to play
 - **`docs/context.md`**: Deep context with architecture details, naming conventions, and common task examples
 - **`opencode.yaml`**: Explicit seven-stage workflow configuration
+- **`.harness/templates/plan_template.md`**: Standard Markdown plan template for agents to copy and fill in
+- **`.harness/progress.json`**: Task progress tracking (current_stage, plans, last_updated) to support multi-turn conversation breakpoints
 - **`make verify`**: Unified validation entry point; agents get immediate quality feedback after any change
-- **`.harness/` runtime directories**: Plans, eval feedback, and state are separated to support multi-turn conversation breakpoints
 
 ## Architecture
 

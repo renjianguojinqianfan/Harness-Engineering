@@ -11,7 +11,7 @@
 
 - **一键生成完整项目**：包结构、CLI、测试、Harness 运行时、Git 初始化，全部自动完成
 - **生成即验证**：每个生成的项目都内置 `make verify`（ruff + pytest，覆盖率 ≥ 85%）
-- **对 Agent 友好**：生成的项目自带 `AGENTS.md`、`docs/context.md`、`opencode.yaml`，外部智能体（如 OpenCode）可以直接理解项目结构和工作流
+- **对 Agent 友好**：生成的项目自带增强版 `AGENTS.md`（含 Planner / Generator / Evaluator 三角色强制工作流）、标准计划模板 `.harness/templates/plan_template.md`、状态追踪 `.harness/progress.json`，以及 `docs/context.md`、`opencode.yaml`，外部智能体可以直接理解项目结构和工作流
 - **安全健壮**：项目名校验、路径遍历防护、Git 失败自动回滚、State 原子写入
 - **双语文档**：生成的项目包含中英文 README，便于国际化协作
 - **模块化设计**：生成的 `harness` 核心引擎包含 `runner`、`evaluator`、`state`、`workflow` 等组件，开箱即用
@@ -47,9 +47,9 @@ make verify
 - 完整的 Python 包结构（`src/my_project/`）
 - Harness 核心引擎：`runner.py`（任务执行）、`evaluator.py`（结果评估）、`state.py`（状态持久化）、`workflow.py`（工作流定义）
 - Agent stubs：`planner.py`、`generator.py`、`evaluator.py`
-- 运行时目录：`.harness/plans/`、`.harness/eval_feedback/`、`.harness/state/`、`.harness/progress.json`
+- 运行时目录：`.harness/plans/`、`.harness/eval_feedback/`、`.harness/state/`、`.harness/templates/plan_template.md`、`.harness/progress.json`
 - 多命令 CLI：`run`、`evaluate`、`status`
-- `configs/`（dev/test/prod）、`docs/context.md`、`docs/decisions/`、`AGENTS.md`、`opencode.yaml`
+- `configs/`（dev/test/prod）、`docs/context.md`、`docs/decisions/`、`AGENTS.md`（含三角色工作流指令）、`opencode.yaml`
 - `pyproject.toml`、`Makefile`、`.gitignore`、`README.md`、`README.en.md`
 - 自动初始化的 Git 仓库和初始提交
 
@@ -62,8 +62,9 @@ my-project/
 │   ├── eval_feedback/        # 评估反馈
 │   ├── state/                # 状态持久化
 │   ├── templates/            # 模板文件
+│   │   └── plan_template.md  # Agent 标准计划模板
 │   ├── logs/                 # 运行日志
-│   └── progress.json         # 任务进度
+│   └── progress.json         # 任务进度（含 current_stage、plans、last_updated）
 ├── configs/                  # 多环境配置 (dev/test/prod)
 ├── docs/                     # 文档
 │   ├── context.md            # Agent 上下文
@@ -128,11 +129,12 @@ harness-init [OPTIONS] PROJECT_NAME
 
 生成的项目专为外部智能体设计：
 
-- **`AGENTS.md`**：快速地图，agent 第一眼就能理解项目角色、工作流和关键约束
+- **`AGENTS.md`**：快速地图，含 Planner / Generator / Evaluator 三角色强制工作流，agent 第一眼就能理解自己该扮演什么角色
 - **`docs/context.md`**：深层上下文，包含架构细节、命名规范、常见任务示例
 - **`opencode.yaml`**：显式声明七阶段工作流配置
+- **`.harness/templates/plan_template.md`**：标准 Markdown 计划模板，Agent 创建计划时直接复制填写
+- **`.harness/progress.json`**：任务进度追踪（current_stage、plans、last_updated），支持多轮对话断点续传
 - **`make verify`**：统一验证入口，agent 修改后立即获得质量反馈
-- **`.harness/` 运行时目录**：plan、eval_feedback、state 分离，支持多轮对话断点续传
 
 ## 架构
 
