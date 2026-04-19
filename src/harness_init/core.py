@@ -1,6 +1,7 @@
 """Core logic for harness-init."""
 
 import json
+import os
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -23,6 +24,7 @@ def _create_directories(project_path: Path, project_name: str) -> None:
     """创建项目标准目录结构。"""
     package_name = _to_package_name(project_name)
     dirs = [
+        ".github/workflows",
         ".harness/plans",
         ".harness/eval_feedback",
         ".harness/state",
@@ -31,6 +33,7 @@ def _create_directories(project_path: Path, project_name: str) -> None:
         "configs",
         "docs",
         "docs/decisions",
+        "scripts",
         f"src/{package_name}",
         f"src/{package_name}/harness",
         f"src/{package_name}/agents",
@@ -81,6 +84,8 @@ def _copy_templates(
         dst.parent.mkdir(parents=True, exist_ok=True)
         _copy_or_render_template(src, dst, project_name, description, author, email)
         dst.chmod(src.stat().st_mode)
+        if dst.suffix == ".sh" and os.name != "nt":
+            dst.chmod(0o755)
 
 
 def _create_source_files(project_path: Path, project_name: str) -> None:

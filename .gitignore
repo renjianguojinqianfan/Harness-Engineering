@@ -44,3 +44,6 @@ htmlcov/
 
 # Build artifacts
 *.spec
+
+# Working drafts
+改进计划草稿.md
