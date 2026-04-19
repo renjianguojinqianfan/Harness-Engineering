@@ -1,0 +1,33 @@
+# .cursorrules — {project_name}
+
+> Cursor IDE quick reference. Full workflow: `AGENTS.md`
+
+## Code Style
+
+- Follow PEP 8; enforce via `ruff`
+- Modules: snake_case; Classes: PascalCase
+- Functions ≤ 30 lines; Files ≤ 200 lines
+
+## Testing
+
+- All core logic MUST have unit tests
+- Coverage ≥ 85% (enforced by `pytest-cov`)
+- Run `make verify` after every change
+
+## Documentation
+
+- Keep `AGENTS.md` concise (50–100 lines)
+- Deep context lives in `docs/context.md`
+- One session = one atomic task
+
+## Agent Workflow
+
+Every session MUST declare a role:
+1. **Planner**: Read `docs/context.md`, create plan, wait for approval
+2. **Generator**: Implement approved plan, run `make verify` per step
+3. **Evaluator**: Review against plan, verify criteria, sign off
+
+## Commands
+
+- `make verify` — lint + tests, coverage ≥ 85%
+- `make fix` — auto-fix linting
