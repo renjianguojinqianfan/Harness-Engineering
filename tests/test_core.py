@@ -19,6 +19,7 @@ def test_init_project_creates_subdirectories(tmp_path: Path) -> None:
     """应创建标准子目录结构。"""
     project_path = tmp_path / "test-project"
     init_project(str(project_path))
+    assert (project_path / ".github" / "workflows").is_dir()
     assert (project_path / ".harness" / "plans").is_dir()
     assert (project_path / ".harness" / "eval_feedback").is_dir()
     assert (project_path / ".harness" / "state").is_dir()
@@ -27,6 +28,7 @@ def test_init_project_creates_subdirectories(tmp_path: Path) -> None:
     assert (project_path / "configs").is_dir()
     assert (project_path / "docs").is_dir()
     assert (project_path / "docs" / "decisions").is_dir()
+    assert (project_path / "scripts").is_dir()
     assert (project_path / "src" / "test_project").is_dir()
     assert (project_path / "src" / "test_project" / "harness").is_dir()
     assert (project_path / "src" / "test_project" / "agents").is_dir()
@@ -63,6 +65,68 @@ def test_init_project_creates_opencode_yaml(tmp_path: Path) -> None:
     project_path = tmp_path / "test-project"
     init_project(str(project_path))
     assert (project_path / "opencode.yaml").exists()
+
+
+def test_init_project_creates_cursorrules(tmp_path: Path) -> None:
+    """应生成 .cursorrules。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    cursorrules = project_path / ".cursorrules"
+    assert cursorrules.exists()
+    content = cursorrules.read_text(encoding="utf-8")
+    assert "test-project" in content
+    assert "Code Style" in content
+    assert "Testing" in content
+    assert "Agent Workflow" in content
+
+
+def test_init_project_creates_pre_commit_config(tmp_path: Path) -> None:
+    """应生成 .pre-commit-config.yaml。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / ".pre-commit-config.yaml").exists()
+
+
+def test_init_project_creates_ci_workflow(tmp_path: Path) -> None:
+    """应生成 .github/workflows/ci.yml。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / ".github" / "workflows" / "ci.yml").exists()
+
+
+def test_init_project_creates_pre_push_sh(tmp_path: Path) -> None:
+    """应生成 scripts/pre-push.sh。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "scripts" / "pre-push.sh").exists()
+
+
+def test_init_project_creates_pre_push_ps1(tmp_path: Path) -> None:
+    """应生成 scripts/pre-push.ps1。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "scripts" / "pre-push.ps1").exists()
+
+
+def test_init_project_creates_project_map(tmp_path: Path) -> None:
+    """应生成 docs/PROJECT_MAP.md。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "docs" / "PROJECT_MAP.md").exists()
+
+
+def test_init_project_creates_adr_template(tmp_path: Path) -> None:
+    """应生成 docs/decisions/ADR_TEMPLATE.md。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "docs" / "decisions" / "ADR_TEMPLATE.md").exists()
+
+
+def test_init_project_creates_claude_md(tmp_path: Path) -> None:
+    """应生成 CLAUDE.md。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "CLAUDE.md").exists()
 
 
 def test_init_project_creates_pyproject_toml(tmp_path: Path) -> None:
@@ -118,16 +182,19 @@ def test_init_project_agents_md_has_workflow(tmp_path: Path) -> None:
     assert "Evaluator" in content
 
 
-def test_init_project_creates_plan_template(tmp_path: Path) -> None:
-    """应生成 .harness/templates/plan_template.md。"""
+def test_init_project_creates_plan_template_json(tmp_path: Path) -> None:
+    """应生成 .harness/templates/plan_template.json 且为有效 JSON。"""
+    import json
+
     project_path = tmp_path / "test-project"
     init_project(str(project_path))
-    plan_template = project_path / ".harness" / "templates" / "plan_template.md"
+    plan_template = project_path / ".harness" / "templates" / "plan_template.json"
     assert plan_template.exists()
-    content = plan_template.read_text(encoding="utf-8")
-    assert "## Goal" in content
-    assert "## Steps" in content
-    assert "## Acceptance Criteria" in content
+    data = json.loads(plan_template.read_text(encoding="utf-8"))
+    assert "goal" in data["$schema"]["properties"]
+    assert "steps" in data["$schema"]["properties"]
+    assert "acceptance_criteria" in data["$schema"]["properties"]
+    assert "template_example" in data
 
 
 def test_init_project_creates_source_files(tmp_path: Path) -> None:
@@ -269,3 +336,24 @@ def test_init_project_injects_metadata(tmp_path: Path) -> None:
     git_config = (project_path / ".git" / "config").read_text(encoding="utf-8")
     assert "bob@test.com" in git_config
     assert "Bob" in git_config
+
+
+def test_generated_project_document_consistency(tmp_path: Path) -> None:
+    """验证生成项目的关键文档之间的一致性。"""
+    import json
+
+    project_path = tmp_path / "consistency-project"
+    init_project(str(project_path))
+    agents_md = (project_path / "AGENTS.md").read_text(encoding="utf-8")
+    context_md = (project_path / "docs" / "context.md").read_text(encoding="utf-8")
+    plan_template = project_path / ".harness" / "templates" / "plan_template.json"
+    assert "plan_template.json" in agents_md
+    assert "plan_template.md" not in agents_md
+    assert "plan_template.json" in context_md
+    assert "Planner" in agents_md
+    assert "Generator" in agents_md
+    assert "Evaluator" in agents_md
+    assert len(agents_md.splitlines()) <= 100
+    plan_data = json.loads(plan_template.read_text(encoding="utf-8"))
+    assert "goal" in plan_data["$schema"]["properties"]
+    assert "steps" in plan_data["$schema"]["properties"]
