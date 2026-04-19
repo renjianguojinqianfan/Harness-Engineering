@@ -7,16 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-04-20
 
+> **Note**: This release consolidates features originally planned for v0.4.0 and v0.5.0 into a single stable release.
+
 ### Added
 
 - **Plan Template v2 (Breaking)**: Converted `.harness/templates/plan_template.md` to `plan_template.json` with JSON Schema + YAML front matter for machine-readable plan validation.
 - **Approval Workflow**: `AGENTS.md` now enforces explicit `proposed → approved → completed` state machine. Human approval is mandatory before code generation.
 - **Security Guidelines**: Added Chinese-language security section to `AGENTS.md` covering: no auto-execution of unreviewed commands, secrets handling, and dependency scanning.
-- **DevOps Templates**:
+- **DevOps Templates** (originally planned for v0.4.0):
   - `.pre-commit-config.yaml`: Optional pre-commit hooks (ruff, trailing-whitespace, check-yaml).
   - `.github/workflows/ci.yml`: GitHub Actions workflow with Python 3.11/3.12 matrix, `make verify`, and coverage reporting.
   - `scripts/pre-push.sh` + `scripts/pre-push.ps1`: Cross-platform pre-push hooks.
-- **IDE Adapter Files**:
+- **IDE Adapter Files** (originally planned for v0.5.0):
   - `CLAUDE.md`: Quick-reference adapter for Claude Code aligned with AGENTS.md workflow.
   - `.cursorrules`: Cursor IDE configuration enforcing project constraints (≤30 lines/function, ≥85% coverage).
 - **Documentation Templates**:
@@ -34,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `plan_template.md` removed; all references updated to `plan_template.json`.
+
+## Historical Roadmap (Pre-1.0)
+
+These items were originally planned as incremental releases but were consolidated into v1.0.0:
+
+- **v0.4.0 (planned)**: Git Hook integration (`pre-commit` config, CI workflow, pre-push scripts).
+- **v0.5.0 (planned)**: Multi-agent IDE adapters (`CLAUDE.md`, `.cursorrules`).
+- **v1.0.0 (actual)**: All of the above + plan template format migration + ADR/PROJECT_MAP + full test coverage.
 
 ## [0.3.0] - 2026-04-17
 

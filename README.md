@@ -124,20 +124,18 @@ my-awesome-project/
 
 ## 🗺️ 路线图
 
-### ✅ 已完成 (v0.3.0)
-- [x] 增强 `AGENTS.md`：强制三阶段工作流指令
-- [x] 标准化计划模板 `.harness/templates/plan_template.md`
-- [x] 状态文件 `progress.json` Schema 定义
-
-### 🔨 进行中 (v0.4.0)
-- [ ] 提供 Git Hook 脚本（`pre-commit`），支持手动启用
-- [ ] 可选生成 GitHub Actions CI 配置（`--ci github`）
-- [ ] 优化生成后的"下一步指引"提示
+### ✅ 已完成 (v1.0.0)
+- [x] 计划模板从 Markdown 迁移到 JSON Schema（Breaking Change）
+- [x] 增强 `AGENTS.md`：审批工作流 + 安全规范（≤100 行）
+- [x] Git Hook 集成：`.pre-commit-config.yaml` + `scripts/pre-push.sh|ps1`
+- [x] GitHub Actions CI 配置：`.github/workflows/ci.yml`
+- [x] IDE 适配文件：`CLAUDE.md`、`.cursorrules`
+- [x] 项目文档：`docs/PROJECT_MAP.md`、`docs/decisions/ADR_TEMPLATE.md`
+- [x] 跨平台 `.sh` 执行权限自动修复
 
 ### 📅 计划中
-- [ ] 适配更多 AI 工具：`CLAUDE.md`、`.cursorrules` 生成
-- [ ] 项目地图 `docs/PROJECT_MAP.md`（机器可读）
 - [ ] 探索多技术栈支持（Node.js / Go）
+- [ ] harnessctl CLI 增强
 
 > ⏰ 本项目由个人业余维护，路线图不承诺具体发布时间，按功能优先级和社区反馈动态调整。
 

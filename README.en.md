@@ -124,20 +124,18 @@ my-awesome-project/
 
 ## 🗺️ Roadmap
 
-### ✅ Completed (v0.3.0)
-- [x] Enhanced `AGENTS.md`: mandatory three-stage workflow instructions
-- [x] Standardized plan template `.harness/templates/plan_template.md`
-- [x] State file `progress.json` schema definition
-
-### 🔨 In Progress (v0.4.0)
-- [ ] Provide Git Hook scripts (`pre-commit`) with optional manual enablement
-- [ ] Optional GitHub Actions CI configuration generation (`--ci github`)
-- [ ] Optimize post-generation "next steps" hints
+### ✅ Completed (v1.0.0)
+- [x] Plan template migrated from Markdown to JSON Schema (Breaking Change)
+- [x] Enhanced `AGENTS.md`: approval workflow + security guidelines (≤100 lines)
+- [x] Git Hook integration: `.pre-commit-config.yaml` + `scripts/pre-push.sh|ps1`
+- [x] GitHub Actions CI configuration: `.github/workflows/ci.yml`
+- [x] IDE adapter files: `CLAUDE.md`, `.cursorrules`
+- [x] Project documentation: `docs/PROJECT_MAP.md`, `docs/decisions/ADR_TEMPLATE.md`
+- [x] Cross-platform `.sh` executable permission auto-fix
 
 ### 📅 Planned
-- [ ] Support more AI tools: `CLAUDE.md`, `.cursorrules` generation
-- [ ] Project map `docs/PROJECT_MAP.md` (machine-readable)
 - [ ] Explore multi-tech-stack support (Node.js / Go)
+- [ ] harnessctl CLI enhancements
 
 > ⏰ This project is maintained in my spare time. The roadmap does not promise specific release dates and is dynamically adjusted based on feature priority and community feedback.
 
