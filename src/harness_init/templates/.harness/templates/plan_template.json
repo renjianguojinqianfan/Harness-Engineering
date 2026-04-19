@@ -1,0 +1,105 @@
+{
+  "created_by": "harness-init",
+  "approved_by": null,
+  "status": "approved",
+  "created_at": "2026-04-20",
+  "updated_at": "2026-04-20",
+  "$schema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": [
+      "goal",
+      "steps",
+      "affected_files",
+      "acceptance_criteria",
+      "rollback_plan"
+    ],
+    "properties": {
+      "goal": {
+        "type": "string",
+        "description": "One-sentence description of the task objective."
+      },
+      "context": {
+        "type": "string",
+        "description": "Relevant background information, dependencies, constraints."
+      },
+      "steps": {
+        "type": "array",
+        "description": "Detailed, ordered list of implementation steps.",
+        "items": {
+          "type": "object",
+          "required": ["description", "status"],
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed", "cancelled"]
+            }
+          }
+        }
+      },
+      "affected_files": {
+        "type": "array",
+        "description": "List of files that will be created or modified.",
+        "items": {
+          "type": "string"
+        }
+      },
+      "acceptance_criteria": {
+        "type": "array",
+        "description": "Specific, testable conditions that must be met.",
+        "items": {
+          "type": "string"
+        }
+      },
+      "rollback_plan": {
+        "type": "array",
+        "description": "Steps to revert changes if issues arise.",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "template_example": {
+    "goal": "Add user authentication to the API",
+    "context": "The API currently has no authentication. We need JWT-based auth for protected endpoints.",
+    "steps": [
+      {
+        "description": "Install python-jose and passlib dependencies",
+        "status": "pending"
+      },
+      {
+        "description": "Create auth module with JWT token generation and verification",
+        "status": "pending"
+      },
+      {
+        "description": "Add auth middleware to FastAPI application",
+        "status": "pending"
+      },
+      {
+        "description": "Write unit tests for auth flow with >= 85% coverage",
+        "status": "pending"
+      }
+    ],
+    "affected_files": [
+      "src/api/auth.py",
+      "src/api/main.py",
+      "pyproject.toml",
+      "tests/test_auth.py"
+    ],
+    "acceptance_criteria": [
+      "POST /login returns a valid JWT token for correct credentials",
+      "Protected endpoints reject requests without a valid token",
+      "make verify passes with ruff, pytest, and coverage >= 85%"
+    ],
+    "rollback_plan": [
+      "Revert changes in pyproject.toml and run pip install -e '.[dev]'",
+      "Delete src/api/auth.py and tests/test_auth.py",
+      "Restore src/api/main.py from last git commit",
+      "Run make verify to confirm clean state"
+    ]
+  }
+}
