@@ -32,6 +32,26 @@ jobs:
           name: dist
           path: dist/
 
+  publish-test:
+    name: Publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+        continue-on-error: true
+
   publish:
     name: Publish to PyPI
     needs: build
