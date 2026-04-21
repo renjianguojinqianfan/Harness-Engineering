@@ -1,235 +1,190 @@
-# 🚀 harness-init
+# Project-Bootstrap-Harness (PBH)
 
-[![PyPI version](https://badge.fury.io/py/harness-init.svg)](https://badge.fury.io/py/harness-init)
-[![Python Version](https://img.shields.io/pypi/pyversions/harness-init.svg)](https://pypi.org/project/harness-init/)
+> 一个为 AI 辅助编程设计的 **Python 项目协议模板**。
+> 
+> 它不指挥 AI 怎么写代码，而是在项目诞生的第一秒，就把"这里应该怎么协作"写成一份机器可读的合同。
+
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/badge/pypi-harness--init-green.svg)](https://pypi.org/project/harness-init/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-
-> **为 AI Agent 准备的 Python 项目脚手架。**
-> 不是又一个代码生成器，而是一份任何 AI 工具都能读懂的 **"协作合同"**。
 
 ---
 
-## 🤔 为什么需要这个工具？
+## 为什么需要这个？
 
-用 Claude Code、Codex、Cursor 写代码时，你是否遇到过这些场景：
+用 Claude Code、Cursor 或 Codex 写代码时，你大概率遇到过这些摩擦：
 
-- AI 写了代码却不跑测试，小问题滚雪球？
-- 新建一个会话后，AI 完全忘记之前的决策，需要你反复"喂"上下文？
-- 团队里每个人对 AI 的指挥方式不一样，代码风格混乱？
+- **每次新会话都要重新交代规则**："记得跑测试"、"别改无关文件"、"先写计划再编码"
+- **AI 写了代码却不验证**：小错误滚雪球，最后人类来兜底
+- **团队协作时，每个人对 AI 的指挥方式不一样**：A 同事让 AI 直接改，B 同事让 AI 先写方案，代码风格混乱
 
-**问题不在于 AI 不够聪明，而在于我们没给它一个清晰、持久、可验证的"工作环境"。**
+**问题不在于 AI 不够聪明，而在于项目本身缺少一份"默认协作协议"。**
 
-`harness-init` 在创建项目的第一秒，就把 **AI 的工作说明书、质量门禁和状态管理系统** 种进项目里。从此，任何进入项目的 AI 工具都知道：该按什么流程干活、如何交接任务、以及怎样才算"做完了"。
-
----
-
-## ✨ 核心特性
-
-- **🤖 Agent 原生设计**：生成的 `AGENTS.md` 定义了 Planner → Generator → Evaluator 三角色强制工作流，让 AI 学会"分工协作"。
-- **✅ 生成即验证**：内置 `make verify` 流水线，强制运行 ruff 代码检查 + pytest 测试，覆盖率门槛 **≥85%**。质量不过关，项目不算生成成功。
-- **🛡️ 约束即代码**：自动提供 Git Hooks 脚本和 GitHub Actions CI 配置（可选），让规范成为不可绕过的硬约束。
-- **📋 标准化的交接协议**：计划模板、进度状态文件、交接摘要，让 AI 即使在新会话中也能"无缝接棒"。
-- **🌍 双语文档**：自动生成中英文 `README.md`，降低国际化团队的协作门槛。
-- **🎯 专注 Python，刻意轻量**：不实现复杂的 Agent 运行时，只做最擅长的事——定义一套通用的协作规范。
+PBH 在 `harness-init my-project` 的瞬间，把协议、质量门禁和状态记录种进项目。从此，任何打开这个项目的 AI 工具都能在 1 分钟内知道：这里的工作流是什么、质量底线在哪里、上一棒跑到哪了。
 
 ---
 
-## 📊 效果验证
+## 它做了什么（以及没做什么）
 
-我们用 Trae Solo Coder 做了一次严格的对照实验，任务是为 CLI 项目添加一个新子命令。
+### ✅ 它是一份"协作合同"
 
-| 指标 | 普通项目 | PBH 项目 |
-| :--- | :--- | :--- |
-| 人类需要澄清的次数 | 2 次 | **1 次** |
-| AI 执行的任务步骤数 | 10 步 | **6 步** |
-| 调试修复次数 | 4 次 | **1 次** |
-| 是否主动运行质量门禁 | 否 | **是 (`make verify`)** |
-| 总耗时 | 15-20 分钟 | **5-8 分钟** |
+- **`AGENTS.md`**：50-100 行的项目级系统提示，定义 Planner → Generator → Evaluator 三角色工作流、变更控制矩阵、安全规范
+- **`docs/context.md`**：深层上下文（架构概览、命名约定、常见任务）
+- **`.harness/progress.json`**：跨会话状态记录，让 AI 在新会话中快速恢复上下文  
+  （示例：`{"current_stage": "plan", "plans": [{"id": "plan_001", "status": "approved"}], "last_updated": "2026-04-20T12:00:00Z"}`）
 
-👉 **[查看完整实验报告 →](docs/experiments/trae-solo-comparison.md)**
+### ✅ 它是质量门禁的基础设施
+
+- **`make verify`**：一键运行 ruff + pytest，覆盖率门槛 ≥ 85%
+- **GitHub Actions CI**：推送即触发检查
+- **Git Hooks**：提交前自动拦截风格问题
+
+### ✅ 它带有一套可扩展的骨架代码
+
+生成项目包含最小可运行的 Harness 组件：
+- `harness/runner.py`：异步执行 JSON 计划文件中的命令步骤（串行编排 + 单任务错误熔断）
+- `harness/evaluator.py`：基于执行结果的三维度评分（状态/完成率/错误）
+- `harness/state.py`：原子化 JSON 状态读写（`tempfile` + `os.replace` 保证写入安全）
+- `harness/workflow.py`：七阶段状态机定义（Feedback → Triage → Clarify → Plan → Execute → Evaluate → Done）
+
+### ❌ 它不是 Agent 运行时
+
+PBH **不强制执行** Agent 的行为。它不会阻止 AI 跳过 Planner 直接写代码，也不会自动推进工作流状态。它提供的是**协议和工具**，Agent 是否遵守，取决于 Agent 工具自身的理解能力和人类的即时监督。
+
+### ❌ 它不是代码生成器
+
+PBH 不根据自然语言描述生成业务代码。它生成的是**项目结构、配置文件和接口骨架**，业务逻辑需要你自己（或你的 AI）填充。
 
 ---
 
-## 📦 安装
+## 快速开始
 
 ```bash
 pip install harness-init
-```
 
-需要 Python 3.11 或更高版本。
-
----
-
-## 🚀 快速开始
-
-### 1. 创建新项目
-
-```bash
+# 完整模式（含 CI、IDE 适配、文档体系、Harness 骨架）
 harness-init my-awesome-project
-```
 
-按提示输入项目描述、作者信息（或使用 `--yes` 跳过）。
-
-### 2. 快速体验模式
-
-如果你只想快速体验核心功能，可以使用 `--quick` 模式：
-
-```bash
+# 快速模式（最小可用，5 分钟上手）
 harness-init my-project --quick --yes
 ```
 
-**精简模式包含：**
-- 核心项目结构（`src/`、`tests/`）
-- `AGENTS.md`（简化版，保留三角色工作流）
-- `Makefile`、`pyproject.toml`、`README.md`
-- `.harness/` 工作区（计划模板 + 状态追踪）
-
-**精简模式不包含：**
-- CI/CD 配置（`.github/workflows/`）
-- IDE 适配文件（`CLAUDE.md`、`.cursorrules`）
-- 文档体系（`docs/decisions/`、`PROJECT_MAP`）
-- Git Hooks（`.pre-commit-config.yaml`）
-- Agent 子系统（`harness/`、`agents/`、`tools/`、`utils/`）
-
-适合场景：快速原型验证、5分钟上手体验、个人工具项目。
-
-### 3. 进入项目并安装依赖
+进入项目并验证：
 
 ```bash
 cd my-awesome-project
 pip install -e ".[dev]"
+make verify        # 应输出 ✔ 验证通过
 ```
 
-### 4. 运行验证流水线
+### 💡 如果 make 命令不可用
+
+Windows 用户可能未安装 make。若提示 'make' 不是内部或外部命令，你可以：
+
+**安装 make：**
+
+- Windows：安装 GnuWin32 Make 或 `winget install GnuWin32.Make`
+- macOS：`xcode-select --install`
+- Linux：`sudo apt install make`
+
+**直接运行等价命令：**
 
 ```bash
-make verify
+ruff check src/ tests/
+ruff format --check src/ tests/
+mypy src/
+pytest tests/ -v --cov=src --cov-fail-under=85
 ```
 
-> 💡 **如果 `make` 命令不可用**
->
-> Windows 用户可能未安装 `make`，macOS / Linux 通常已内置。若提示 `'make' 不是内部或外部命令`，你可以：
->
-> 1. **安装 make**（推荐）：
->    - **Windows**：安装 [GnuWin32 Make](https://gnuwin32.sourceforge.net/packages/make.htm) 或使用 `winget install GnuWin32.Make`；也可通过 Chocolatey 安装：`choco install make`。
->    - **macOS**：通常已内置，若缺失则安装 Xcode Command Line Tools：`xcode-select --install`。
->    - **Linux**：使用包管理器安装，如 `sudo apt install make` (Debian/Ubuntu) 或 `sudo yum install make` (CentOS/RHEL)。
->
-> 2. **直接运行等价命令**（无需 make）：
->    ```bash
->    ruff check src/ tests/
->    ruff format --check src/ tests/
->    mypy src/
->    pytest tests/ -v --cov=src --cov-fail-under=85
->    ```
->    这些命令与 `make verify` 完全等效。
+邀请 AI 入场：
 
-如果一切正常，你会看到 `✔ 验证通过`。
+> "请阅读 AGENTS.md，按里面的工作流帮我规划一个功能。"
 
-> 💡 使用 `--quick` 模式生成的精简项目结构更简单，详见上方"快速体验模式"。
+## 生成的项目结构
 
-### 5. 邀请 AI 入场
-
-用 Claude Code、Cursor 或 Codex 打开项目，对 AI 说：
-
-> "请阅读 `AGENTS.md`，以 Planner 角色帮我规划一个功能：添加一个 CLI 命令来显示系统信息。"
-
-AI 会自动读取工作流定义，按 **计划 → 生成 → 评估** 的节奏完成任务。
-
----
-
-## 📁 生成的项目结构
-
-```
+```text
 my-awesome-project/
-├── .harness/                 # Agent 工作区
-│   ├── plans/                # 计划文件存放处
+├── .harness/                 # 工作区
+│   ├── plans/                # 计划文件（JSON Schema）
 │   ├── state/                # 状态持久化
-│   ├── templates/            # 计划模板等
+│   ├── templates/            # 计划模板
 │   ├── logs/                 # 运行日志
-│   └── progress.json         # 任务进度追踪
+│   └── progress.json         # 会话状态（AI 新会话的第一站）
 ├── configs/                  # 多环境配置
-├── docs/                     # 文档（含 context.md 上下文）
-├── src/my_awesome_project/   # 主包
-│   ├── cli.py                # CLI 入口
-│   ├── harness/              # 核心引擎（runner/evaluator/state/workflow）
-│   ├── agents/               # Agent 骨架（planner/generator/evaluator）
-│   ├── tools/                # 工具函数
+├── docs/
+│   ├── context.md            # 深层上下文（架构、约定、任务）
+│   └── decisions/            # 架构决策记录（ADR）
+├── src/my_awesome_project/
+│   ├── cli.py                # 可选 CLI 入口（Typer），如不需要可直接删除或改为模块入口
+│   ├── harness/              # 最小可运行骨架（runner/evaluator/state/workflow）
+│   ├── agents/               # Agent 接口占位符（需自行实现 LLM 调用）
+│   ├── tools/                # 工具函数目录
 │   └── utils/                # 通用辅助
 ├── tests/                    # 测试套件
-├── .gitignore
-├── AGENTS.md                 # AI 工作流强制说明书
-├── opencode.yaml             # Codex 配置（含自定义命令）
-├── Makefile                  # 验证与自动化任务
-├── pyproject.toml            # 项目元数据与依赖
-├── README.md                 # 中文说明
-└── README.en.md              # 英文说明
+├── AGENTS.md                 # AI 协作协议（项目级系统提示）
+├── Makefile                  # verify / fix / test
+├── pyproject.toml            # 依赖 + 工具配置
+└── README.md
 ```
 
----
+关于 harness/ 和 agents/ 目录：生成的是接口骨架和可运行示例，不是生产级 Agent 运行时。runner.py 能执行 JSON 计划文件，evaluator.py 能按固定维度评分，但任务编排目前只支持串行、无超时控制、无重试机制。你可以在此基础上扩展，也可以完全替换为自己的实现。
 
-## 🛠️ 命令选项
+## 两种模式对比
 
-| 选项 | 简写 | 说明 |
-| :--- | :--- | :--- |
-| `--force` | `-f` | 强制覆盖已存在的目录（旧目录自动备份） |
-| `--no-git` | | 跳过 Git 初始化 |
-| `--yes` | `-y` | 跳过所有交互提示，使用默认值 |
-| `--quick` | `-q` | 生成精简项目（无 CI/文档/钩子/IDE 配置） |
-| `--ci <platform>` | | 生成 CI 配置文件（目前支持 `github`） |
-| `--version` | `-v` | 显示版本号 |
+| 特性 | 完整模式 | 快速模式 (--quick) |
+|------|----------|-------------------|
+| AGENTS.md | 完整版（90 行，含审批工作流） | 精简版（30 行，保留核心工作流） |
+| Harness 骨架 | ✅ runner + evaluator + state + workflow | ❌ |
+| Agent 占位符 | ✅ planner + generator + evaluator | ❌ |
+| CI/CD | ✅ GitHub Actions | ❌ |
+| IDE 适配 | ✅ CLAUDE.md / .cursorrules / opencode.yaml | ❌ |
+| 文档体系 | ✅ context.md / PROJECT_MAP / ADR | ❌ |
+| 依赖 | typer + pydantic + pyyaml + rich | 仅 typer |
 
----
+## 核心价值：降低三类成本
 
-## 🗺️ 路线图
+### 上下文对齐成本
 
-### ✅ 已完成 (v1.0.0)
-- [x] 计划模板从 Markdown 迁移到 JSON Schema（Breaking Change）
-- [x] 增强 `AGENTS.md`：审批工作流 + 安全规范（≤100 行）
-- [x] Git Hook 集成：`.pre-commit-config.yaml` + `scripts/pre-push.sh|ps1`
-- [x] GitHub Actions CI 配置：`.github/workflows/ci.yml`
-- [x] IDE 适配文件：`CLAUDE.md`、`.cursorrules`
-- [x] 项目文档：`docs/PROJECT_MAP.md`、`docs/decisions/ADR_TEMPLATE.md`
-- [x] 跨平台 `.sh` 执行权限自动修复
+AI 进入新项目时，不再需要从零摸索"这里怎么工作"。AGENTS.md + context.md 提供了结构化的入职手册。
 
-### 📅 计划中
-- [ ] 探索多技术栈支持（Node.js / Go）
-- [ ] harnessctl CLI 增强
+### 规范遗忘成本
 
-> ⏰ 本项目由个人业余维护，路线图不承诺具体发布时间，按功能优先级和社区反馈动态调整。
+人类开发者换机器、AI 工具开新会话时，.harness/progress.json 记录了当前阶段和未完成任务，减少重复交代。
 
----
+### 质量回归成本
 
-## 📅 维护节奏
+`make verify` 把代码风格、单元测试、覆盖率检查固化为不可绕过的命令。Agent 是否主动运行取决于其自律性，但命令本身始终可用且标准统一。
 
-- 🐛 **Bug 修复**：通常在一周内响应。
-- ✨ **新功能**：每 **2-4 周** 发布一个小版本，按路线图推进。
-- 💬 **Issue 回复**：尽量在 48 小时内回复。
+## 使用场景
 
-感谢你的耐心和理解！欢迎通过 Issues 和 Discussions 参与讨论。
+**适合：**
 
----
+- 个人开发者用 AI 工具（Claude Code / Cursor / Codex）快速启动 Python 项目（CLI 工具、脚本库、自动化脚本、原型项目等）
+- 小团队统一 AI 协作规范（"我们团队的项目都按这个结构来"）
+- 需要可验证、可交接的 AI 辅助开发流程
 
-## 🤝 贡献
+**不适合：**
 
-欢迎任何形式的贡献！请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md) 了解开发规范和提交流程。
+- 需要确定性自动化的无人值守流水线（PBH 不锁死 Agent 行为）
+- 复杂多 Agent 自主协作系统（当前 runner 只支持串行命令执行）
+- 非 Python 项目（当前模板仅支持 Python 3.11+）
 
----
+## 路线图
 
-## 📄 许可证
+- **v1.0.0**：Python 项目模板、JSON 计划格式、质量门禁、Quick 模式、PyPI 发布
+- **v1.1.0**：多技术栈模板（Node.js / Go）、模板插件系统
+- **v1.2.0**：增强 runner 编排能力（超时控制、重试机制）
 
-MIT License © [renjianguojinqianfan](https://github.com/renjianguojinqianfan)
+本项目由个人业余维护，路线图按优先级和社区反馈动态调整。
 
----
+## 致谢
 
-## 🙏 致谢
+- [Typer](https://typer.tiangolo.com/) — 优雅的 CLI 框架
+- [Ruff](https://docs.astral.sh/ruff/) — 极速 Python Linter
+- [Pytest](https://docs.pytest.org/) — 可靠的测试框架
 
-- [Typer](https://typer.tiangolo.com/) - 优雅的 CLI 框架
-- [Ruff](https://docs.astral.sh/ruff/) - 极速 Python Linter
-- [Pytest](https://docs.pytest.org/) - 可靠的测试框架
-- 灵感来源：Anthropic 的 GAN 式三智能体架构、OpenAI 的"代码仓库作为记录系统"实践、Martin Fowler 的 Harness Engineering 论述。
+灵感来源：Anthropic 的 Agentic Workflow 与 Context Engineering 实践、OpenAI 的 Harness Engineering 理念
 
----
+## License
 
-**[English Version](README.en.md)**
+MIT © renjianguojinqianfan
