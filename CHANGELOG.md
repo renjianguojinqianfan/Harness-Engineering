@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-04-24
+
+### Changed
+
+- **Positioning Calibration (Phase 1)**: PBH is now strictly a project structure generator, not an agent runtime framework.
+  - Removed `harness/`, `agents/`, `tools/` stubs from templates — these were agent runtime facilities outside PBH's scope.
+  - Simplified `_create_directories()` and `_create_source_files()` in `core.py` to only create essential directories.
+- **AGENTS.md Rewrite**: Converted from manifesto-style (Principle → Protocol → Workflow → File Mapping) to airport-navigation style:
+  - Quick Start (30 seconds to get working)
+  - Critical Rules (`make verify` gate, coverage ≥85%)
+  - File Mapping
+  - Common Commands
+- **Quick Mode Cleanup**:
+  - `pyproject.quick.toml` now only includes `typer + pytest + ruff` (removed `pydantic`, `pyyaml`, `rich`).
+  - Updated `_QUICK_MODE_EXCLUSIONS` to remove references to deleted stubs.
+- **Template Simplification**:
+  - `cli.py` and `cli.quick.py` templates now use a basic `typer` example (hello/version) instead of importing harness modules.
+  - `test_cli.py` template updated to match the simplified CLI.
+
+### Removed
+
+- `src/{package_name}/harness/` template files: `runner.py`, `evaluator.py`, `state.py`, `workflow.py`
+- `src/{package_name}/agents/` template files: `planner.py`, `generator.py`, `evaluator.py`
+- `tests/test_harness.py` template
+
 ## [1.0.0] - 2026-04-20
 
 > **Note**: This release consolidates features originally planned for v0.4.0 and v0.5.0 into a single stable release.
