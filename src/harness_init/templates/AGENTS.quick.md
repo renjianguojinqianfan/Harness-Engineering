@@ -1,40 +1,41 @@
 # AGENTS.md - {project_name}
 
-> **Principle**: Keep this file to 50 lines. Deep context lives in code comments.
+> Keep this file to 50 lines or fewer.
 
 ## 1. Project Snapshot
 
-**{project_name}** is a quick-start project. {project_description}
+**{project_name}** — {project_description}
 
-**Maintainer**: {author_name}  
-**Type**: quick-start
+## 2. Quick Start
 
-## 2. Session Protocol
+1. `make verify`
+2. Run the tests
+3. Locate the entry point
 
-**One session = One atomic task**
+## 3. Multi-Agent
 
-1. **Verify Baseline**: Run `make verify` → must pass before any edit
-2. **Select Task**: Pick ONE item from open issues / plans
-3. **Implement**: Generate code → auto-trigger `make verify`
-4. **Commit**: Write descriptive commit
+Multiple agents may work here concurrently. Use independent git worktrees. Check `.harness/progress.json` before starting.
 
-## 3. Three-Role Workflow
+## 4. Working Guidelines
 
-Every session MUST declare its role before acting.
+- State your plan before coding: what, why, and expected impact
+- One task per session
+- Run `make verify` after changes
+- Check `docs/decisions/` when unsure about design choices
+- Follow existing code style; do not over-engineer
 
-- **Planner**: Create plan, define acceptance criteria
-- **Generator**: Implement step-by-step, run `make verify` per unit
-- **Evaluator**: Review against plan, verify acceptance criteria, loop back if issues found
+## 5. Critical Rules
 
-## 4. File Mapping
+- Never commit code that fails `make verify`
+- Maintain test coverage threshold
+- Follow the project's existing code style
+- One atomic task per session
 
-| Type | Location | Description |
-|------|----------|-------------|
-| Source | `src/{package_name}/` | Main application code |
-| Tests | `tests/` | Mirror `src/` structure |
-| Entry | `src/{package_name}/cli.py` | CLI entry point |
+## 6. File Mapping
 
-## 5. Commands
-
-- `make verify`: Lint (`ruff`) + tests (`pytest`), coverage >= 85%
-- `make fix`: Auto-fix linting; MUST re-run `make verify` after
+| Location | Purpose |
+|----------|---------|
+| `src/` | Main code |
+| `tests/` | Tests |
+| `tasks/` | Task breakdown |
+| `.harness/` | Project state |
