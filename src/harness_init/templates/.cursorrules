@@ -20,13 +20,6 @@
 - Deep context lives in `docs/context.md`
 - One session = one atomic task
 
-## Agent Workflow
-
-Every session MUST declare a role:
-1. **Planner**: Read `docs/context.md`, create plan, wait for approval
-2. **Generator**: Implement approved plan, run `make verify` per step
-3. **Evaluator**: Review against plan, verify criteria, sign off
-
 ## Commands
 
 - `make verify` — lint + tests, coverage ≥ 85%

@@ -10,29 +10,7 @@
 
 - Deep context lives in `docs/context.md`
 - State of truth: `.harness/progress.json`
-- Plans: `.harness/plans/*.json`
-
-## Agent Workflow
-
-Every session MUST declare a role before acting.
-
-### 1. Planner
-- Read `docs/context.md`
-- Create plan via `.harness/templates/plan_template.json`
-- Mark status `proposed`; **wait for human approval**
-- No code generation from `proposed` plans
-
-### 2. Generator
-- Read approved plan (status: `approved`)
-- Implement step-by-step
-- Run `make verify` per unit of work
-- Update `.harness/progress.json`
-
-### 3. Evaluator
-- Review implementation against plan
-- Verify acceptance criteria
-- Run `make verify`; loop back if issues found
-- Sign off: mark plan `completed`
+- Templates: `.harness/templates/plan_template.json`
 
 ## Constraints
 
@@ -54,7 +32,7 @@ make fix       # auto-fix linting; MUST re-run `make verify` after
 ## Quick Rules
 
 - **DO** read `docs/context.md` before architectural decisions
-- **DO** run `make verify` after every change; never skip Evaluator
+- **DO** run `make verify` after every change
 - **DON'T** commit failing code; don't fix unrelated code during task
 - **DON'T** add abstractions for single-use cases
 - **DON'T** execute shell commands without human review
