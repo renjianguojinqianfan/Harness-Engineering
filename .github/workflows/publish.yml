@@ -35,26 +35,6 @@ jobs:
           name: dist
           path: dist/
 
-  publish-test:
-    name: Publish to TestPyPI
-    needs: build
-    runs-on: ubuntu-latest
-    environment: testpypi
-    permissions:
-      id-token: write
-
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-        continue-on-error: true
-
   publish:
     name: Publish to PyPI
     needs: build
@@ -62,15 +42,15 @@ jobs:
     environment: pypi
     permissions:
       id-token: write
-
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true  # 关键配置：如果此版本已存在，则跳过
 
   github-release:
     name: Create GitHub Release
@@ -78,15 +58,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
