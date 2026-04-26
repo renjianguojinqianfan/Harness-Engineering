@@ -1,11 +1,2 @@
-runner:
-  stop_on_error: true
-
-evaluator:
-  min_score: 90
-
-state:
-  path: ".harness/state/state.json"
-
 logging:
   level: INFO

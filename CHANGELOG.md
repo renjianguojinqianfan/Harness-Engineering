@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7] - 2026-04-27
+
+### Added
+
+- `src/harness_init/_templates.py`: 将模板处理逻辑从 `core.py` 抽取，控制 core.py 行数在 200 行以内。
+- `templates/tasks/task_plan.md`: 新增 Spec Coding 任务容器模板。
+- `tests/test_templates.py`: 为模板处理模块添加单元测试（16 个测试用例）。
+- `tests/test_core.py`: 新增 `test_init_project_creates_tasks_directory` 测试。
+
+### Changed
+
+- `core.py`: 重构 `_copy_templates()`，拆分超长函数，行数从 227 降至 153。
+- `core.py`: 新增 `_init_git_safe()`，安全处理 Git 初始化失败回滚。
+- `core.py _create_directories()`: 新增 `tasks/` 目录创建。
+- `templates/configs/test.yaml`: 移除 `runner`/`evaluator`/`state` 过时配置段。
+- `templates/configs/prod.yaml`: 移除 `runner`/`evaluator`/`state` 过时配置段。
+
 ## [1.1.6] - 2026-04-26
 
 ### Added

@@ -1,14 +1,13 @@
 """Core logic for harness-init."""
 
 import json
-import os
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
 from harness_init._git import _init_git, _on_remove_error
+from harness_init._templates import copy_templates
 from harness_init._utils import (
-    _copy_or_render_template,
     _ensure_dir,
     _to_package_name,
     _validate_project_name,
@@ -59,32 +58,13 @@ def _create_directories(project_path: Path, project_name: str, quick: bool = Fal
         ".harness/templates",
         "docs",
         f"src/{package_name}",
+        "tasks",
         "tests",
     ]
     for d in dirs:
         if quick and _is_excluded_quick(d + "/", package_name):
             continue
         _ensure_dir(project_path / d)
-
-
-_IGNORED_NAMES = {
-    ".ruff_cache",
-    "__pycache__",
-    ".DS_Store",
-    ".git",
-    ".pytest_cache",
-    ".mypy_cache",
-}
-_IGNORED_SUFFIXES = (".pyc", ".pyo", ".swp", "~")
-
-
-def _should_skip(path: Path) -> bool:
-    """判断模板路径是否应被跳过。"""
-    if not path.is_file():
-        return True
-    if any(part in _IGNORED_NAMES for part in path.parts):
-        return True
-    return path.name.endswith(_IGNORED_SUFFIXES)
 
 
 def _copy_templates(
@@ -96,47 +76,18 @@ def _copy_templates(
     quick: bool = False,
 ) -> None:
     """复制模板文件到项目目录（递归）。"""
-    templates_dir = _get_templates_dir()
     package_name = _to_package_name(project_name)
-
-    # 预扫描 .quick. 变体，确定哪些基础文件需要跳过
-    quick_bases: set[str] = set()
-    for src in templates_dir.rglob("*"):
-        if _should_skip(src):
-            continue
-        if ".quick." in src.name:
-            base_rel = src.relative_to(templates_dir)
-            base_name = base_rel.name.replace(".quick.", ".")
-            base_path = base_rel.parent / base_name
-            quick_bases.add(str(base_path))
-
-    for src in templates_dir.rglob("*"):
-        if _should_skip(src):
-            continue
-
-        rel = src.relative_to(templates_dir)
-
-        # 处理 .quick. 模板变体
-        if ".quick." in src.name:
-            if not quick:
-                continue
-            dest_name = rel.name.replace(".quick.", ".")
-            rel = rel.parent / dest_name
-        else:
-            if quick and str(rel) in quick_bases:
-                continue
-
-        rel_str = str(rel).replace("\\", "/").replace("{package_name}", package_name)
-
-        if quick and _is_excluded_quick(rel_str, package_name):
-            continue
-
-        dst = project_path / rel_str
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        _copy_or_render_template(src, dst, project_name, description, author, email)
-        dst.chmod(src.stat().st_mode)
-        if dst.suffix == ".sh" and os.name != "nt":
-            dst.chmod(0o755)
+    copy_templates(
+        _get_templates_dir(),
+        project_path,
+        project_name,
+        package_name,
+        description=description,
+        author=author,
+        email=email,
+        quick=quick,
+        is_excluded=lambda rel_str: _is_excluded_quick(rel_str, package_name),
+    )
 
 
 def _create_source_files(project_path: Path, project_name: str, quick: bool = False) -> None:
@@ -171,7 +122,9 @@ def _prepare_project_path(path: Path, force: bool) -> None:
     if ".." in path.parts:
         raise ValueError("Project path cannot contain '..'.")
     if path.exists() and not force and (path.is_file() or any(path.iterdir())):
-        raise FileExistsError(f"Directory {path} already exists and is not empty. Use --force to overwrite.")
+        raise FileExistsError(
+            f"Directory {path} already exists and is not empty. Use --force to overwrite."
+        )
     if force and path.exists():
         suffix = datetime.now(UTC).strftime(".bak-%Y%m%d%H%M%S%f")
         backup_path = path.with_name(path.name + suffix)
@@ -191,6 +144,17 @@ def _setup_project(
     _copy_templates(path, project_name, description, author, email, quick=quick)
     _create_source_files(path, project_name, quick=quick)
     _create_progress_json(path, path.name)
+
+
+def _init_git_safe(path: Path, author: str, email: str) -> None:
+    """安全地初始化 Git 仓库，失败时回滚。"""
+    try:
+        _init_git(path, author, email)
+    except Exception as exc:
+        git_dir = path / ".git"
+        if git_dir.exists():
+            shutil.rmtree(str(git_dir), onerror=_on_remove_error)
+        raise RuntimeError(f"Git initialization failed: {exc}") from exc
 
 
 def init_project(
@@ -218,10 +182,4 @@ def init_project(
     _prepare_project_path(path, force)
     _setup_project(path, path.name, description, author, email, quick=quick)
     if not no_git:
-        try:
-            _init_git(path, author, email)
-        except Exception as exc:
-            git_dir = path / ".git"
-            if git_dir.exists():
-                shutil.rmtree(str(git_dir), onerror=_on_remove_error)
-            raise RuntimeError(f"Git initialization failed: {exc}") from exc
+        _init_git_safe(path, author, email)

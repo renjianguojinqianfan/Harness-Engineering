@@ -205,6 +205,18 @@ def test_init_project_creates_configs(tmp_path: Path) -> None:
     assert (project_path / "configs" / "prod.yaml").exists()
 
 
+def test_init_project_creates_tasks_directory(tmp_path: Path) -> None:
+    """应生成 tasks/ 目录和 task_plan.md 模板。"""
+    project_path = tmp_path / "test-project"
+    init_project(str(project_path))
+    assert (project_path / "tasks").is_dir()
+    task_plan = project_path / "tasks" / "task_plan.md"
+    assert task_plan.exists()
+    content = task_plan.read_text(encoding="utf-8")
+    assert "Task Plan" in content
+    assert "Phase 1" in content
+
+
 def test_init_project_entry_point_importable(tmp_path: Path) -> None:
     """生成的 cli.py 必须能导入 cli 入口函数。"""
     project_path = tmp_path / "test-project"
