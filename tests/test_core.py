@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from harness_init.core import init_project
 
 
@@ -383,3 +385,36 @@ def test_generated_project_document_consistency(tmp_path: Path) -> None:
     plan_data = json.loads(plan_template.read_text(encoding="utf-8"))
     assert "goal" in plan_data["$schema"]["properties"]
     assert "steps" in plan_data["$schema"]["properties"]
+
+
+def test_init_project_template_lib(tmp_path: Path) -> None:
+    """--template=lib 应生成库项目结构。"""
+    project_path = tmp_path / "lib-project"
+    init_project(str(project_path), template="lib")
+    assert (project_path / "src" / "lib_project" / "__init__.py").exists()
+    assert not (project_path / "src" / "lib_project" / "cli.py").exists()
+    pyproject = (project_path / "pyproject.toml").read_text(encoding="utf-8")
+    assert "[project.scripts]" not in pyproject
+
+
+def test_init_project_template_web(tmp_path: Path) -> None:
+    """--template=web 应生成 FastAPI 项目结构。"""
+    project_path = tmp_path / "web-project"
+    init_project(str(project_path), template="web")
+    assert (project_path / "src" / "web_project" / "main.py").exists()
+    pyproject = (project_path / "pyproject.toml").read_text(encoding="utf-8")
+    assert "fastapi" in pyproject
+
+
+def test_init_project_template_notebook(tmp_path: Path) -> None:
+    """--template=notebook 应生成 notebook 项目结构。"""
+    project_path = tmp_path / "nb-project"
+    init_project(str(project_path), template="notebook")
+    assert (project_path / "notebooks" / "example.ipynb").exists()
+    assert not (project_path / "src").exists()
+
+
+def test_init_project_invalid_template(tmp_path: Path) -> None:
+    """无效模板应引发 ValueError。"""
+    with pytest.raises(ValueError, match="Unknown template"):
+        init_project(str(tmp_path / "bad-project"), template="invalid")

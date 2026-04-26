@@ -13,6 +13,8 @@ from harness_init._utils import (
     _validate_project_name,
 )
 
+_VALID_TEMPLATES: frozenset[str] = frozenset({"cli", "lib", "web", "notebook"})
+
 _QUICK_MODE_EXCLUSIONS: frozenset[str] = frozenset(
     {
         "CLAUDE.md",
@@ -29,6 +31,15 @@ _QUICK_MODE_EXCLUSIONS: frozenset[str] = frozenset(
         "tests/test_harness.py",
     }
 )
+
+
+def _validate_template(template: str) -> None:
+    """验证模板类型是否有效。"""
+    if template not in _VALID_TEMPLATES:
+        raise ValueError(
+            f"Unknown template '{template}'. "
+            f"Valid templates: {', '.join(sorted(_VALID_TEMPLATES))}"
+        )
 
 
 def _get_templates_dir(template: str = "cli") -> Path:
@@ -194,6 +205,7 @@ def init_project(
         template: 项目模板类型（cli, lib, web, notebook）。
     """
     path = Path(project_path)
+    _validate_template(template)
     _prepare_project_path(path, force)
     _setup_project(path, path.name, description, author, email, quick=quick, template=template)
     if not no_git:
