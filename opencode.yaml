@@ -1,5 +1,0 @@
-version: "1.0"
-skills:
-  - ohmyopencode
-model:
-  primary: "kimi-for-coding/k2p5"
