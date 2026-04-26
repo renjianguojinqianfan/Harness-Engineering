@@ -54,6 +54,22 @@ def _resolve_quick_variant(
     return rel
 
 
+def _place_file(
+    src: Path,
+    dst: Path,
+    project_name: str,
+    description: str,
+    author: str,
+    email: str,
+) -> None:
+    """渲染并放置单个文件，设置权限。"""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    _copy_or_render_template(src, dst, project_name, description, author, email)
+    dst.chmod(src.stat().st_mode)
+    if dst.suffix == ".sh" and os.name != "nt":
+        dst.chmod(0o755)
+
+
 def _copy_template_source(
     source_dir: Path,
     project_path: Path,
@@ -83,12 +99,7 @@ def _copy_template_source(
         if is_excluded is not None and is_excluded(rel_str):
             continue
 
-        dst = project_path / rel_str
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        _copy_or_render_template(src, dst, project_name, description, author, email)
-        dst.chmod(src.stat().st_mode)
-        if dst.suffix == ".sh" and os.name != "nt":
-            dst.chmod(0o755)
+        _place_file(src, project_path / rel_str, project_name, description, author, email)
 
 
 def copy_templates(

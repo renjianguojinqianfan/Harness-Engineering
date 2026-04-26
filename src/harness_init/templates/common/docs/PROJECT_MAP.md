@@ -22,13 +22,13 @@ last_updated: "{generated_date}"
 | Type | {project_type} |
 | Language | Python 3.11+ |
 
-**Design philosophy**: Layered architecture with CLI → Core → Agents. Every layer is independently testable. `make verify` is the ground truth for correctness.
+**Design philosophy**: Protocol-first scaffolding. The project is generated with a universal agent collaboration protocol (AGENTS.md) and quality gates (make verify). `make verify` is the ground truth for correctness.
 
 ## 2. Directory Structure
 
 ```
 {project_name}/
-├── .harness/                    # Agent runtime workspace
+├── .harness/                    # Project state tracking
 │   ├── templates/               # Plan templates and boilerplate
 │   └── progress.json            # Session state source of truth
 ├── configs/                     # Environment-specific configuration
@@ -68,7 +68,7 @@ last_updated: "{generated_date}"
 | `pyproject.toml` | Dependencies, build config, tool settings | Add new deps in `[project.dependencies]` |
 | `Makefile` | `make verify`, `make test`, `make lint` | Always run `make verify` before commit |
 | `configs/` | Environment configs (dev, test, prod) | Load via `configparser` or `pydantic-settings` |
-| `opencode.yaml` | OpenCode / Codex agent configuration | Custom commands and workflows |
+| `opencode.yaml` (optional, via --ide) | OpenCode / Codex agent configuration | Custom commands and workflows |
 
 ### 3.3 Documentation
 

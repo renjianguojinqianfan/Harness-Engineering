@@ -39,7 +39,7 @@
 - **Self-evaluation ban**: Only `make verify` output is ground truth
 - Never hardcode secrets; use env vars or `.env`
 - Review all shell commands before execution
-- Function ≤ 30 lines, file ≤ 200 lines
+- Keep functions and files small. Specific size limits are outlined in IDE-specific adapters (e.g., CLAUDE.md, .cursorrules).
 - Use atomic write-then-rename for persistent files
 
 ## 8. File Mapping

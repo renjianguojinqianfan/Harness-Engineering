@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-04-27
+
+### Added
+
+- `--template` / `-t` 参数：支持多项目类型模板（`cli`, `lib`, `web`, `notebook`）。
+  - `cli`（默认）：命令行工具，含 typer CLI 入口。
+  - `lib`：纯 Python 库，含 `__init__.py` 导出示例函数。
+  - `web`：FastAPI Web 项目，含 `/health` 端点和 TestClient 测试。
+  - `notebook`：Jupyter Notebook 项目，含示例 `.ipynb` 和 `notebooks/` 目录。
+- `--ide` 参数：按需生成 IDE 适配文件。
+  - `all`（默认）：生成全部 IDE 配置（Cursor、Claude、Trae、Copilot、OpenCode）。
+  - `none`：不生成任何 IDE 配置。
+  - 支持单独指定：`cursor`, `claude`, `trae`, `copilot`, `opencode`。
+- `.harness/known_pitfalls.md`：新增项目常见陷阱记录模板。
+- `.trae/rules/rules.md`：Trae IDE 规则适配模板。
+- `.github/copilot-instructions.md`：GitHub Copilot 指令适配模板。
+- 模板目录重构：`templates/` 拆分为 `common/`（共享文件）+ `cli/`（类型专属）+ `lib/` + `web/` + `notebook/`。
+- 多源模板复制：`_templates.py` 支持从 `common/` 和类型目录合并复制。
+
+### Changed
+
+- `README.md`：补充 `--template` 和 `--ide` 使用示例；更新路线图标注 v1.5.0 已完成。
+- `AGENTS.md`（全部模板类型）：将硬性数值限制（"Function ≤ 30 lines"）改为原则性阐述，避免与 IDE 适配文件冲突。
+- `docs/PROJECT_MAP.md`：更新设计哲学为 "Protocol-first scaffolding"；`.harness/` 注释改为 "Project state tracking"。
+- `docs/context.md`：`.harness/` 注释改为 "Project state tracking"。
+- `docs/decisions/ADR_TEMPLATE.md`：删除已废弃的 Change Control Matrix 引用块。
+- `pyproject.toml`：Development Status 更新为 `5 - Production/Stable`。
+- `__init__.py`：回退版本号更新为 `1.5.0`。
+- CLI 帮助文本：改进 `--template` 和 `--ide` 的说明，明确列出可选值和默认值。
+
+### Fixed
+
+- `_copy_template_source()` 函数长度：提取 `_place_file()` 辅助函数，确保所有函数 ≤ 30 行。
+- IDE 文件过滤逻辑：修复 quick 模式下错误排除 IDE 文件的问题。
+
 ## [1.1.7] - 2026-04-27
 
 ### Added

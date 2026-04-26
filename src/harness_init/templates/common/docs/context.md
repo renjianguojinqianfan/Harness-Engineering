@@ -20,7 +20,7 @@ tech_stack:
 ├── src/{package_name}/          # Application source code
 │   └── cli.py                   # CLI entry point
 ├── tests/                       # Unit and integration tests
-├── .harness/                    # Harness runtime artifacts
+├── .harness/                    # Project state tracking
 │   ├── templates/               # Agent plan templates
 │   └── progress.json            # Source of truth for session state
 ├── docs/

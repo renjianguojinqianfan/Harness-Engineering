@@ -54,10 +54,19 @@ def main(
     yes: bool = typer.Option(False, "--yes", "-y", help="跳过交互提示，使用默认值。"),
     quick: bool = typer.Option(False, "--quick", "-q", help="生成精简项目（无 CI/文档/钩子/IDE 配置）。"),
     template: str = typer.Option(
-        "cli", "--template", "-t", help="项目模板类型（cli, lib, web, notebook）。"
+        "cli",
+        "--template",
+        "-t",
+        help="项目模板类型。可选: cli (默认), lib, web, notebook。",
     ),
     ide: str = typer.Option(
-        "all", "--ide", help="IDE 配置模式（all, none, cursor, claude, trae, copilot, opencode）。"
+        "all",
+        "--ide",
+        help=(
+            "生成特定 IDE 配置文件。"
+            "可选: all (默认，生成全部), none (不生成), "
+            "cursor, claude, trae, copilot, opencode。"
+        ),
     ),
 ) -> None:
     """初始化一个新的 Harness Engineering 项目。"""

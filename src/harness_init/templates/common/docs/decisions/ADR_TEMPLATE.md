@@ -3,10 +3,6 @@
 > **Purpose**: Architecture Decision Records (ADR) for {project_name}.
 > Every significant design decision MUST be documented here.
 >
-> **Change Control Matrix Reference**:
-> | Error Type | Rollback Level | Mechanical Guard |
-> |------------|----------------|------------------|
-> | Design error | Update architecture decision | No code without ADR in `docs/decisions/` |
 
 ---
 
